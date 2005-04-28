@@ -52,7 +52,7 @@ from pprint import pprint
 pprint('look ma! no burdensome framework!')
 
 # in fact, all writes to stdout will be included in our report
-sys.stdout.write('teehee!')
+#sys.stdout.write('teehee!')
 
 
 

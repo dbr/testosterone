@@ -3,11 +3,13 @@ account for multiple small statements
 clean up output formatting
     catch pprint
     catch sys.stdout.write (?)
-need to execute all terms of each test and capture the output
+    line numbers
+    h3 for FAILUREs (need to execute all terms of each test and capture the output)
 clean up cli
     test*.py accept globs
     -r recursive (implies -a)
     -1 stop after first test
 write man page
-
+write tutorial
+write tests for ASTutils and pytest
 release it

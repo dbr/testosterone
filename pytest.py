@@ -40,7 +40,7 @@ class interpolator:
     def interpolate(self, block):
         """return the original block with our interpolations
         """
-        self.cst = parser.suite(block).tolist()
+        self.cst = parser.suite(block).tolist() # line_info=True
         self.walk(self.cst)
         ast = parser.sequence2ast(self.cst)
         return ASTutils.ast2text(ast)
@@ -120,14 +120,15 @@ class observer(StringIO):
     failed = 0
     exceptions = 0
 
-    def __init__(self, filename):
+    def __init__(self, filename, *arg, **kw):
         self.filename = filename
+        StringIO.__init__(self, *arg, **kw)
 
     ##
     # main intercept wrapper
     ##
 
-    def intercept(self, statement, globals, locals,
+    def intercept(self, statement, linenumber, globals, locals,
                   COMPARING=False, PRINTING=False):
         """Given a statement, some context, and a couple optional flags, write
         to our report. Since we are called from inside of the test, sys.stdout
@@ -140,20 +141,21 @@ class observer(StringIO):
                 if eval(statement, globals, locals):
                     self.passed += 1
                 else:
-                    print 'False: %s' % statement
+                    self.print_h2('Failure', statement)
+                    print
                     print
                     self.failed += 1
             except:
-                print statement
-                print '-'*79
+                self.print_h2('Exception', statement)
                 traceback.print_exc(file=self)
+                print
                 print
                 self.exceptions += 1
 
         elif PRINTING:
-            print statement
-            print '-'*79
+            self.print_h2('Output', statement)
             exec statement in globals, locals
+            print
             print
 
     ##
@@ -168,11 +170,7 @@ class observer(StringIO):
     def print_header(self):
         """output a header for the report
         """
-        print
-        print "#"*79
-        print "#"+self.filename.rjust(47)+" "*30+"#"
-        print "#"*79
-        print
+        self.print_h1(self.filename)
 
     def print_footer(self):
         """output a footer for the report
@@ -197,6 +195,35 @@ class observer(StringIO):
       , str(self.failed).rjust(4)
       , str(self.exceptions).rjust(4)
       , str(total).rjust(4))
+
+    ##
+    # formatting helpers
+    ##
+
+    def print_h1(self, s):
+        print "#"*79
+        print "# %s #" % self._center(s, 75)
+        print "#"*79
+        print
+
+    def print_h2(self, stype, s):
+        print '+' + '-'*77 + '+'
+        print '| %s %s         |' % ( stype.upper().ljust(9)
+                                    , self._center(s[:57], 57)
+                                     )
+        print '+' + '-'*77 + '+'
+        print
+
+    def _center(self, s, i):
+        """given a string s and an int i, return a string i chars long with s
+        centered
+        """
+        slen = len(s)
+        rpadding = (i - slen) / 2
+        lpadding = rpadding + ((i - slen) % 2)
+        return ' '*rpadding + s + ' '*lpadding
+
+
 
 
 class utils:
