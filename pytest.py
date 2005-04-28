@@ -120,6 +120,9 @@ class observer(StringIO):
     failed = 0
     exceptions = 0
 
+    def __init__(self, filename):
+        self.filename = filename
+
     ##
     # main intercept wrapper
     ##
@@ -128,7 +131,8 @@ class observer(StringIO):
                   COMPARING=False, PRINTING=False):
         """Given a statement, some context, and a couple optional flags, write
         to our report. Since we are called from inside of the test, sys.stdout
-        is actually our parent. :^)
+        is actually our parent. However, we leave sys.stderr alone, and any
+        exceptions in fixture will raise as normal.
         """
 
         if COMPARING:
@@ -142,7 +146,7 @@ class observer(StringIO):
             except:
                 print statement
                 print '-'*79
-                traceback.print_exc(file=self) # not sure why we need file=self
+                traceback.print_exc(file=self)
                 print
                 self.exceptions += 1
 
@@ -156,19 +160,6 @@ class observer(StringIO):
     # report generation
     ##
 
-    #def write(self, s):
-    #    """overriding StringIO's write method to provide extra formatting
-    #    """
-    #
-    #    from os import linesep
-    #
-    #    if s == linesep:
-    #        s = linesep + '-'*79
-    #    else:
-    #        s = linesep + '| ' + s[:-2]
-    #    StringIO.write(self, s)
-
-
     def report(self):
         self.print_header()
         print self.getvalue()
@@ -179,7 +170,7 @@ class observer(StringIO):
         """
         print
         print "#"*79
-        print "#"+"running tests ...".rjust(47)+" "*30+"#"
+        print "#"+self.filename.rjust(47)+" "*30+"#"
         print "#"*79
         print
 
@@ -229,12 +220,12 @@ if __name__ == '__main__':
         print "usage: $ pytest [-arh] [filename]"
         raise SystemExit
     else:
-        arg = arg[0]
+        filename = arg[0]
 
-    original = file(arg).read()
+    original = file(filename).read()
     interpolated = interpolator().interpolate(original)
 
-    heisenberg = observer()
+    heisenberg = observer(filename)
 
     __globals__['__pytest__'] = sys.stdout = heisenberg
     exec interpolated in __globals__, __locals__
