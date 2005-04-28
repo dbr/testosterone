@@ -232,11 +232,11 @@ if __name__ == '__main__':
         arg = arg[0]
 
     original = file(arg).read()
-
     interpolated = interpolator().interpolate(original)
 
     heisenberg = observer()
-    __globals__['__pytest__'] = sys.stdout = sys.stderr = heisenberg
+
+    __globals__['__pytest__'] = sys.stdout = heisenberg
     exec interpolated in __globals__, __locals__
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
