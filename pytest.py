@@ -29,9 +29,9 @@ first two. Pytest treats python statements in the following way:
 __globals__ = globals()
 __locals__  = locals()
 
-
-import parser, symbol, sys, token
-from astutils import ast2read, ast2text
+import parser, symbol, sys, token, traceback
+from StringIO import StringIO
+from ASTutils import ASTutils
 
 class interpolator:
     """ given a block of python text, interpolate our framework into it
@@ -43,7 +43,7 @@ class interpolator:
         self.cst = parser.suite(block).tolist()
         self.walk(self.cst)
         ast = parser.sequence2ast(self.cst)
-        return ast2text(ast)
+        return ASTutils.ast2text(ast)
 
     def walk(self, cst):
         """walk an AST list (a cst?) and do our interpolation
@@ -62,11 +62,27 @@ class interpolator:
                 # TODO account for multiple small_stmts
                 if readable_node == 'stmt':
                     if cst[1][0] == symbol.simple_stmt:
-                        if self._is_comparison(cst):
-                            cst[1] = self._wrap(cst)[1]
+
+                        # convert the cst stmt fragment to an AST
+                        ast = parser.sequence2ast(ASTutils.promote_stmt(cst))
+
+                        if self._is_test(ast):
+                            cst[1] = self._wrap(cst, COMPARING=True)[1]
+                        elif ASTutils.hasnode(ast, symbol.print_stmt):
+                            cst[1] = self._wrap(cst, PRINTING=True)[1]
+
+    def _is_test(self, ast):
+        """Given an AST, return a boolean
+        """
+        # a test is a comparison with more than one term
+        if ASTutils.hasnode(ast, symbol.comparison):
+            if ASTutils.hasnode(ast, symbol.comp_op):
+                return True
+        return False
 
     def _readable_node(self, node):
-        """given a single node, return a human-readable representation
+        """given a single node (string or int), return a human-readable
+        representation
         """
         if type(node) is type(0):
             if node < 256:
@@ -77,18 +93,7 @@ class interpolator:
             readable_node = node
         return readable_node
 
-    def _is_comparison(self, node):
-        """ given a node, return a boolean
-        """
-        for subnode in node:
-            if type(subnode) is type([]):
-                return self._is_comparison(subnode)
-            else:
-                if subnode == symbol.comparison:
-                    return True
-        return False
-
-    def _wrap(self, stmt):
+    def _wrap(self, stmt, COMPARING=False, PRINTING=False):
         """given a single simple comparison statement as a cst, return that
         statement wrapped with our testing function, also as a cst
         """
@@ -97,49 +102,127 @@ class interpolator:
         cst = [symbol.file_input,stmt,[token.NEWLINE, ''],[token.ENDMARKER,'']]
 
         # convert first-class cst to source code, wrap it, and back again to cst
-        old_source = ast2text(parser.sequence2ast(cst))
+        old_source = ASTutils.ast2text(parser.sequence2ast(cst))
         # TODO prolly should wrap this in a string to be safe instead of using
         # literal string delimiters
-        new_source = "__pytest__.intercept('%s', globals(), locals())" % old_source
+        tmp = """__pytest__.intercept("%s", globals(), locals(),""" +\
+                                   """COMPARING=%s,PRINTING=%s)"""
+        new_source = tmp % (old_source, COMPARING, PRINTING)
         cst = parser.suite(new_source).tolist()
 
         # and extract our statement from the first-class cst
         return cst[1]
 
 
-class reporter:
+class observer(StringIO):
 
     passed = 0
     failed = 0
     exceptions = 0
 
+    ##
+    # main intercept wrapper
+    ##
+
     def intercept(self, statement, globals, locals,
                   COMPARING=False, PRINTING=False):
-        """given a statement, some context, and a couple optional flags,
+        """Given a statement, some context, and a couple optional flags, write
+        to our report. Since we are called from inside of the test, sys.stdout
+        is actually our parent. :^)
         """
+
         if COMPARING:
             try:
                 if eval(statement, globals, locals):
                     self.passed += 1
                 else:
+                    print 'False: %s' % statement
+                    print
                     self.failed += 1
             except:
+                print statement
+                print '-'*79
+                traceback.print_exc(file=self) # not sure why we need file=self
+                print
                 self.exceptions += 1
 
         elif PRINTING:
-            print >> self.out, '\n'
-            print >> self.out, statement
-            print >> self.out, '-'*79
+            print statement
+            print '-'*79
             exec statement in globals, locals
-            print >> self.out, '\n'
+            print
 
-        else:
-            exec statement in globals, locals
+    ##
+    # report generation
+    ##
+
+    #def write(self, s):
+    #    """overriding StringIO's write method to provide extra formatting
+    #    """
+    #
+    #    from os import linesep
+    #
+    #    if s == linesep:
+    #        s = linesep + '-'*79
+    #    else:
+    #        s = linesep + '| ' + s[:-2]
+    #    StringIO.write(self, s)
+
+
+    def report(self):
+        self.print_header()
+        print self.getvalue()
+        self.print_footer()
+
+    def print_header(self):
+        """output a header for the report
+        """
+        print
+        print "#"*79
+        print "#"+"running tests ...".rjust(47)+" "*30+"#"
+        print "#"*79
+        print
+
+    def print_footer(self):
+        """output a footer for the report
+        """
+
+        total = self.passed + self.failed + self.exceptions
+        #if self.failed + self.exceptions: print '\n'
+
+        print """\
+#######################
+#       RESULTS       #
+#######################
+#                     #
+#       passed: %s  #
+#       failed: %s  #
+#   exceptions: %s  #
+# ------------------- #
+#  total tests: %s  #
+#                     #
+#######################
+""" % ( str(self.passed).rjust(4)
+      , str(self.failed).rjust(4)
+      , str(self.exceptions).rjust(4)
+      , str(total).rjust(4))
+
+
+class utils:
+    """convenience methods for use in pytests
+    """
+
+    def catchException(func, *arg, **kw):
+        try:
+            func(*arg, **kw)
+        except:
+            return sys.exc_info()[0]
+    catchException = staticmethod(catchException)
 
 
 if __name__ == '__main__':
 
-    # interpret the arg on the command line as a
+    # interpret the arg on the command line as a filename to check
 
     arg = sys.argv[1:2]
     if not arg:
@@ -149,10 +232,13 @@ if __name__ == '__main__':
         arg = arg[0]
 
     original = file(arg).read()
+
     interpolated = interpolator().interpolate(original)
 
-    heisenberg = reporter()
-    __globals__['__pytest__'] = heisenberg
+    heisenberg = observer()
+    __globals__['__pytest__'] = sys.stdout = sys.stderr = heisenberg
     exec interpolated in __globals__, __locals__
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
 
-    print heisenberg.passed
+    print heisenberg.report()
