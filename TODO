@@ -1,10 +1,23 @@
+========================================
+    BUGS
+========================================
+
 in wrap function, specify string with syntax tree manipulations instead of literal string delimiters
 account for multiple small statements
+    make promote_node arbitrary?
+traceback shows eval context, not actual script context: is it meaningful/useful?
+
+
+========================================
+    FEATURES
+========================================
+
 clean up output formatting
+    h3 for FAILUREs (need to execute all terms of each test and capture the output)
     catch pprint
     catch sys.stdout.write (?)
+    =====DONE=====
     line numbers
-    h3 for FAILUREs (need to execute all terms of each test and capture the output)
 clean up cli
     test*.py accept globs
     -r recursive (implies -a)
@@ -13,3 +26,4 @@ write man page
 write tutorial
 write tests for ASTutils and pytest
 release it
+=====DONE=====

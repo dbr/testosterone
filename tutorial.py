@@ -46,6 +46,7 @@ foo() is True # the traceback will be printed in the report
 
 # print statements also produce output
 print 'hello world!'
+print 'hello world! hello world! hello world! hello world! hello world! hello world! hello world! '
 
 # as do calls to pprint
 from pprint import pprint
@@ -80,4 +81,3 @@ def foo(bar, baz):
 
 exc = utils.catchException(foo, 1, baz=2)
 exc is FooException
-
