@@ -30,9 +30,11 @@
 
 foo = 'bar'
 
+
 # And any Python conditional is basically a test:
 
 foo == 'bar'
+
 
 # So pytest uses the Python language as it stands to define fixture and tests.
 # This is what it means that pytests are just Python scripts. However, when
@@ -57,6 +59,7 @@ mylist = [1,2,3,4]
 1 in mylist
 5 in mylist
 
+
 # Pytest counts four tests in these five statements. The variable assignment is
 # considered to be fixture and is executed unaltered by pytest. The tests,
 # however, are monitored and their results are tallied. The first three tests
@@ -79,41 +82,45 @@ mylist = [1,2,3,4]
 
 
 ##
-# Section II: Further Detail
+# Section II: Real World Examples
 ##
 
 # Now that we understand the basics of pytest, let's round out the picture with
-# some aspects of pytest that make it useful in the real world. We've seen a
-# simple example of creating fixture in the variable assignment above:
+# some examples that are closer to the real world. We've seen a simple example
+# of creating fixture in the variable assignment above:
 
 mylist = [1,2,3,4]
+
 
 # In fact, there are no limits on how we build fixture: we have the entire
 # Python language at our disposal. For example, we could build a fixture using a
 # 'for' loop:
 
-mylist = [1,2,3,4,5,6,7,8,9,10]
-foo = False
-for i in mylist:
-    if i == 8:
-        foo = True
+mylist = []
+for i in range(10):
+    mylist.append(i)
+
 
 # And then we can test our fixture:
 
-foo is False
+8 in mylist
 
-# Going further, we could define and test a recursive function:
+
+# Going further, there's no reason we couldn't define and test a recursive
+# function (notice the use of 'is True' to explicitly test the function call):
 
 mylist = [1,2,3,[4,[5,6]],7,8,9,[10]]
-def hasitem(seq, i):
+
+def has8(seq):
     for x in seq:
         if type(x) is type([]):
-            hasitem(x, i)
-        elif x == i:
+            has8(x)
+        elif x == 8:
             return True
     return False # default
 
-hasitem(mylist, 8) is True # test
+has8(mylist) is True # test
+
 
 # But why stop there? Here's a class with a recursive classmethod:
 
@@ -130,7 +137,9 @@ class ilove8s:
     gimme8s = classmethod(gimme8s)
 
 ilove8s.gimme8s(mylist, 8)
+
 len(ilove8s.yummy8s) == 3 # test
+
 
 # Of course, what we *really* want to do is to build a fixture out of components
 # that are defined elsewhere. No problem. Here's a little test for whether the
@@ -146,72 +155,152 @@ for i in range(10):
 len(foo) > 1 # test
 
 
-# further detail:
-#   importing, classes, defs, loops
-#   printing
-#       whitespace
-#   exception handling
-#       SyntaxError within parsed code e.g.: 'mylist ='
-#       SyntaxError caught earlier(?), e.g., comment w/o comment token
-#       AST error: malformed code (indent level))
-#       multiple small statements -> exception test (1 == 2; 3 == 1 + 2)
 
-def foo():
-    raise 'bar'
+##
+# Section III: The Report
+##
 
-foo() is True # the traceback will be printed in the report
+# After it executes your test script, pytest will give you a report with the
+# following summary information (printed at the top and bottom of the report):
+#
+#   - Name of the file being tested
+#   - Number of passing tests
+#   - Number of failed tests
+#   - Number of tests that raised exceptions
+#   - Total number of tests
+#   - Total time it took to run the tests, in seconds
+#
+# Pytest will also give you a detailed report for the following:
+#
+#   - Failed tests
+#   - Tests that raised exceptions
+#
+# This detail report includes what the statement was, what line number it was
+# on, the value of all relevant terms (for failures), and a traceback (for
+# exceptions).
+#
+# Additionally, you can explicitly insert information into the report using the
+# print statement:
 
-# print statements also produce output
-print 'hello world!'
-print 'hello world! hello world! hello world! hello world! hello world! hello world! hello world! '
+print 'hello world'
+print >> sys.stdout, "this works too"
 
-# as do calls to pprint
+
+# Any calls to 'print' in your test script will appear in sequence in the final
+# report, along with the original statement and the line number. However, there
+# are several gotchas with this feature:
+#
+#   - Currently pprint.pprint does not behave similarly. The workaround is to
+#     use pformat:
+
 from pprint import pformat
-print pformat('look ma! no burdensome framework!')
-
-# in fact, all writes to stdout will be included in our report
-#sys.stdout.write('teehee!')
+print pformat(mylist)
 
 
+#   - Neither does sys.stdout.write; we may leave this one alone altogether to
+#     allow for manual manipulation of the report:
 
-# Aside from explicit comparisons, the only other thing pytest touches are print
-# statements and calls to pprint. Output from print and pprint are funneled to
-# the report
+from os import linesep
+sys.stdout.write('Anything written to stdout will appear in your report' +\
+                 (linesep*3))
+
+#   - Multi-line strings don't work. This is a bug. The workaround is to assign
+#     to a variable, and then print the variable:
+
+# print """\
+# this will break pytest
+# """
+
+foo = '''\
+    but this won't
+'''
+print foo
+
+
+# As a final note, you will notice in the report that when statements are
+# reproduced in the output, the whitespace may not exactly match the whitespace
+# in the original file (comments will be lost as well). This is due to the way
+# that pytest manipulates the source code and in no way affects the execution of
+# the code.
 
 
 
+##
+# Section IV: Exception Handling
+##
 
-
-
-from pytest import utils
-
+# Exception handling in pytest is somewhat complex, due to the different
+# execution contexts employed. All tests and print statements are executed in a
+# "laboratory" context. Any exceptions they raise will be caught, tallied, and
+# included in the final report. Execution of the script as a whole will then
+# be allowed to proceed unhindered. Here's an example:
 
 def foo():
-    raise 'foo'
-1 == foo()
-def bar():
-    return foo()
-2 == bar()
+    raise RuntimeError, 'ouch!'
+
+foo() is True # look for the traceback in the report
 
 
-##
-# assertRaises functionality
-##
+# Exceptions raised during print statements are also captured by pytest and
+# included in the report, and execution proceeds:
 
-class FooException(Exception):
-    pass
+print foo()
+
+
+# Exceptions raised by fixture, however, are either caught very early or very
+# late. In either case, they terminate execution of the script. If caught early,
+# as in the case of SyntaxErrors, execution will terminate with no report being
+# generated, and the standard traceback will be displayed:
+
+# mylist =
+
+
+# If caught late, then the script must be rerun as if it were a standard Python
+# script (i.e., without pytest's monitoring interferences) in order for a useful
+# traceback to be gathered. Pytest does this for you, but when it does, any
+# prior test or print exceptions are also re-triggered, so that execution
+# actually terminates with the first exception of any kind:
+
+foo()
+
+
+# The net effect of a late fixture exception, however, is that all exceptions up
+# to and including the terminal exception are included in the final report. The
+# last exception is labeled "CRISIS."
+#
+# Because tests are executed in a controlled environment, the tracebacks they
+# produce may look a little goofy. As pytest gets more use I anticipate that this
+# rough edge will be buffed a bit.
+#
+# If you need to test for a certain exception (the equivalent of PyUnit's
+# assertRaises, you can use this idiom:
+
+try:
+    foo()
+except:
+    exc = sys.exc_info()[0]
+
+exc is Exception
+
+
+# The PyTest module on which pytest is based provides a utility class that has a
+# convenience method for this:
 
 def foo(bar, baz):
-    raise FooException
+    raise Exception
 
-exc = utils.catchException(foo, 1, baz=2)
-exc is FooException
+from PyTest import utils
+exc = catch_exc(foo, 1, baz='bar')
+exc is Exception
 
 
+# This is currently the only method in PyTest.utils.
 
-# utils:
-#   catching exceptions
-#   reset button
+
+##
+# Section V: Usage Patterns
+##
+
 # usage patterns:
 #   complements doctest -- similar philosophy
 #   replaces unittest

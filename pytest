@@ -3,7 +3,7 @@
 __globals__ = globals()
 __locals__  = locals()
 
-import PyTest, sys
+import PyTest, sys, traceback
 
 # interpret the arg on the command line as a filename to check
 arg = sys.argv[1:2]
@@ -19,11 +19,10 @@ heisenberg.start_timer()
 original = file(filename).read()
 interpolated = PyTest.Interpolator().interpolate(original)
 
-
 # turn stdout over to our tester, run the test, and then restore stdout
 __globals__['__pytest__'] = sys.stdout = heisenberg
-heisenberg.run(interpolated, __globals__, __locals__)
+heisenberg.run(filename, interpolated, __globals__, __locals__)
 sys.stdout = sys.__stdout__
 
 heisenberg.stop_timer()
-print heisenberg.report()
+heisenberg.report()

@@ -12,7 +12,8 @@ For more information, see the pytest man page.
 __author__ = 'Chad Whitacre'
 __version__ = '0.3'
 
-import parser, symbol, sys, time, token, traceback
+import linecache, os, parser, symbol, sys, time, token, traceback
+from os import linesep
 from StringIO import StringIO
 from ASTutils import ASTutils
 
@@ -82,24 +83,46 @@ class Interpolator:
                 return self._line_number(node)
         return -1 # default
 
+    def _escape_source(self, s):
+        """Given a string, make it safe to be strunged itself
+
+            >>> import PyTest
+            >>> i = PyTest.Interpolator()
+            >>> print i._escape_source('foo')
+            foo
+            >>> print i._escape_source('"foo"')
+            \\"foo\\"
+            >>> print i._escape_source("'bar'")
+            \\'bar\\'
+
+        """
+        s = s.replace("'", "\\'")
+        s = s.replace('"', '\\"')
+        return s
+
+
     def _wrap(self, stmt, COMPARING=False, PRINTING=False):
         """given a single simple comparison statement as a cst, return that
         statement wrapped with our testing function, also as a cst
         """
 
-        # convert statement to a first-class cst
+        # convert statement to source code
         cst = self._stmt2file_input(stmt)
-
-        # convert first-class cst to source code, wrap it, and back again to cst
         old_source = ASTutils.ast2text(parser.sequence2ast(cst))
-        # TODO prolly should wrap this in a string to be safe instead of using
-        # literal string delimiters
-        tmp = """__pytest__.intercept("%s", %s, globals(), locals(),""" +\
-                                   """COMPARING=%s,PRINTING=%s)"""
-        new_source = tmp % (old_source, self._line_number(cst), COMPARING, PRINTING)
-        cst = parser.suite(new_source).tolist()
+        old_source = self._escape_source(old_source)
 
-        # and extract our statement from the first-class cst
+        # escape string delimiters in old source code; convert to single line
+
+        template = """\
+__pytest__.intercept("%s", %s, globals(), locals(), COMPARING=%s,PRINTING=%s)"""
+        new_source = template % ( old_source
+                                , self._line_number(cst)
+                                , COMPARING
+                                , PRINTING
+                                 )
+
+        # convert back to a cst, extract our statement, and return
+        cst = parser.suite(new_source).tolist()
         return cst[1]
 
     def _stmt2file_input(self, cst):
@@ -116,8 +139,10 @@ class Interpolator:
                 ...
             ParserError: parse tree does not use a valid start symbol
             >>> stmt = Interpolator()._stmt2file_input(stmt)
-            >>> parser.sequence2ast(stmt)
-            <parser.st object at 0x817c0d0>
+            >>> foo = parser.sequence2ast(stmt)
+            >>> bar = parser.suite('')
+            >>> type(foo) is type(bar)
+            True
 
         """
         if type(cst) in (type(()), type([])):
@@ -149,6 +174,8 @@ class Observer(StringIO):
     failures = 0
     exceptions = 0
 
+    nontest_excs = 0
+
     stopwatch = None
 
     def __init__(self, filename, *arg, **kw):
@@ -161,15 +188,27 @@ class Observer(StringIO):
     # main callables
     ##
 
-    def run(self, text, globals, locals):
-        """run the interpolated test script
+    def run(self, filename, interpolated, globals, locals):
+        """run the interpolated test script; if that fails, run the original
+        script so that the traceback is accurate
         """
+
         try:
-            exec text in globals, locals
+            exec interpolated in globals, locals
         except:
-            print >> sys.__stdout__, text
-            print
-            traceback.print_exc(file=sys.__stdout__)
+            try:
+                execfile(filename, globals, locals)
+            except:
+                linenumber = sys.exc_info()[2].tb_next.tb_lineno
+                statement = linecache.getline(filename, linenumber)
+                statement = statement.strip().split("#")[0]
+
+                self.print_h2('Crisis', statement, linenumber)
+                traceback.print_exc(file=self)
+                print
+                self.print_h2('', 'TEST TERMINATED', -1)
+                print
+                self.nontest_excs += 1
 
     def intercept(self, statement, linenumber, globals, locals,
                   COMPARING=False, PRINTING=False):
@@ -203,10 +242,14 @@ class Observer(StringIO):
                 self.exceptions += 1
 
         elif PRINTING:
-            self.print_h2('Output', statement, linenumber)
-            exec statement in globals, locals
+            self.print_h2('More Info', statement, linenumber)
+            try:
+                exec statement in globals, locals
+            except:
+                traceback.print_exc(file=self)
             print
             print
+            self.nontest_excs += 1
 
 
     ##
@@ -239,16 +282,21 @@ class Observer(StringIO):
         summary_data['passes']      = str(self.passes).rjust(4)
         summary_data['failures']    = str(self.failures).rjust(4)
         summary_data['exceptions']  = str(self.exceptions).rjust(4)
+        summary_data['nontest_excs']  = str(self.nontest_excs).rjust(4)
         summary_data['seconds']     = ('%.1f' % self.stopwatch).rjust(6)
 
         summary_list = [
-            "        passes: %(passes)s    ",
-            "      failures: %(failures)s    ",
-            "    exceptions: %(exceptions)s    ",
-            " ---------------------- ",
-            "   total tests: %(total)s    ",
-            "                        ",
-            "  time elapsed: %(seconds)ss "
+            "           passes: %(passes)s    ",
+            "         failures: %(failures)s    ",
+            "       exceptions: %(exceptions)s    ",
+            "    ---------------------- ",
+            "      total tests: %(total)s    ",
+            "                           ",
+            " other exceptions: %(nontest_excs)s    ",
+            "                           ",
+            "     time elapsed: %(seconds)ss "
+
+
                         ]
         summary_list = [l % summary_data for l in summary_list]
 
@@ -277,11 +325,16 @@ class Observer(StringIO):
         if len(h) >= 49:
             h = h[:49] + '...'
 
+        if lnum <> -1:
+            linenumber = "LINE: %s" % str(lnum).rjust(4)
+        else:
+            linenumber = "          "
+
         print '+' + '-'*78 + '+'
-        print '| %s  %s  LINE: %s |' % ( stype.upper().ljust(10)
-                                         , self._center(h, 52)
-                                         , str(lnum).rjust(4)
-                                          )
+        print '| %s  %s  %s |' % ( stype.upper().ljust(10)
+                                 , self._center(h, 52)
+                                 , linenumber
+                                  )
         print '+' + '-'*78 + '+'
         print
 
@@ -318,12 +371,12 @@ class utils:
     """convenience methods for use in pytests
     """
 
-    def catchException(func, *arg, **kw):
+    def catch_exc(func, *arg, **kw):
         try:
             func(*arg, **kw)
         except:
             return sys.exc_info()[0]
-    catchException = staticmethod(catchException)
+    catch_exc = staticmethod(catch_exc)
 
 
 
