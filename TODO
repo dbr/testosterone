@@ -12,6 +12,7 @@ traceback shows eval context, not actual script context: is it meaningful/useful
     FEATURES
 ========================================
 
+utils.reset
 clean up output formatting
     same header top and bottom, w/ results
     catch pprint
