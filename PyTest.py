@@ -25,7 +25,7 @@ first two. Pytest treats python statements in the following way:
     3. All other statements are considered fixture and are executed unaltered.
 
 """
-import parser, symbol, sys, token, traceback
+import parser, symbol, sys, time, token, traceback
 from StringIO import StringIO
 from ASTutils import ASTutils
 
@@ -159,12 +159,16 @@ class Observer(StringIO):
     failed = 0
     exceptions = 0
 
+    stopwatch = None
+
     def __init__(self, filename, *arg, **kw):
         self.filename = filename
         StringIO.__init__(self, *arg, **kw)
 
+
+
     ##
-    # main intercept wrapper
+    # main callables
     ##
 
     def run(self, text, globals, locals):
@@ -174,6 +178,8 @@ class Observer(StringIO):
             exec text in globals, locals
         except:
             print >> sys.__stdout__, text
+            print
+            traceback.print_exc(file=sys.__stdout__)
 
     def intercept(self, statement, linenumber, globals, locals,
                   COMPARING=False, PRINTING=False):
@@ -217,43 +223,60 @@ class Observer(StringIO):
                 [symbol.and_test,[symbol.not_test,[symbol.comparison,
                  expr]]]]],[token.NEWLINE, ''],[token.ENDMARKER, '']]
 
+
+
+    ##
+    # stopwatch
+    ##
+
+    def start_timer(self):
+        self.stopwatch = time.time()
+
+    def stop_timer(self):
+        self.stopwatch = time.time() - self.stopwatch
+
+
+
     ##
     # report generation
     ##
 
     def report(self):
-        self.print_header()
+        self.print_summary()
         print self.getvalue()
-        self.print_footer()
+        self.print_summary()
 
-    def print_header(self):
+    def print_summary(self):
         """output a header for the report
         """
-        self.print_h1(self.filename)
-
-    def print_footer(self):
-        """output a footer for the report
-        """
-
         total = self.passed + self.failed + self.exceptions
-        #if self.failed + self.exceptions: print '\n'
+        summary_data = {}
+        summary_data['total']       = str(total).rjust(4)
+        summary_data['passed']      = str(self.passed).rjust(4)
+        summary_data['failed']      = str(self.failed).rjust(4)
+        summary_data['exceptions']  = str(self.exceptions).rjust(4)
+        summary_data['seconds']     = self.stopwatch
 
-        print """\
-#######################
-#       RESULTS       #
-#######################
-#                     #
-#       passed: %s  #
-#       failed: %s  #
-#   exceptions: %s  #
-# ------------------- #
-#  total tests: %s  #
-#                     #
-#######################
-""" % ( str(self.passed).rjust(4)
-      , str(self.failed).rjust(4)
-      , str(self.exceptions).rjust(4)
-      , str(total).rjust(4))
+        summary_list = [
+            "       passed: %(passed)s  ",
+            "       failed: %(failed)s  ",
+            "   exceptions: %(exceptions)s  ",
+            " ------------------- ",
+            "  total tests: %(total)s  ",
+            "                   ",
+            " time elapsed: %(seconds).1fs  ",
+                        ]
+        summary_list = [l % summary_data for l in summary_list]
+
+        self.print_h1(self.filename)
+        print '#%s#' % (' '*78,)
+        for line in summary_list:
+            print '# %s #' % self._center(line, 76)
+        print '#%s#' % (' '*78,)
+        print '#'*80
+        print
+
+
 
     ##
     # formatting helpers
@@ -265,7 +288,6 @@ class Observer(StringIO):
         print "#"*80
         print "# %s #" % self._center(h, 76)
         print "#"*80
-        print
 
     def print_h2(self, stype, h, lnum):
         if len(h) >= 49:

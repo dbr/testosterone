@@ -91,7 +91,7 @@ mylist = [1,2,3,4]
 # loop
 mylist = [1,2,3,4,5,6,7,8,9,10]
 for x in mylist:
-    x == 8
+    x != 8
 
 # function, recursion, testing function calls with 'is True'
 mylist = [1,2,3,[4,[5,6]],7,8,9,[10]]
@@ -130,7 +130,10 @@ len(collector.collect(mylist, 8)) == 2
 # further detail:
 #   importing, classes, defs, loops
 #   printing
-#   exception handling (SyntaxError: 'mylist ='; AST error: malformed code (indent level))
+#   exception handling
+#       SyntaxError, e.g.: 'mylist ='
+#       AST error: malformed code (indent level))
+#       multiple small statements -> exception test (1 == 2; 3 == 1 + 2)
 
 def foo():
     raise 'bar'

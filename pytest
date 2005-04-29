@@ -13,15 +13,17 @@ if not arg:
 else:
     filename = arg[0]
 
+heisenberg = PyTest.Observer(filename)
+heisenberg.start_timer()
+
 original = file(filename).read()
 interpolated = PyTest.Interpolator().interpolate(original)
 
-heisenberg = PyTest.Observer(filename)
 
 # turn stdout over to our tester, run the test, and then restore stdout
 __globals__['__pytest__'] = sys.stdout = heisenberg
 heisenberg.run(interpolated, __globals__, __locals__)
 sys.stdout = sys.__stdout__
 
+heisenberg.stop_timer()
 print heisenberg.report()
-
