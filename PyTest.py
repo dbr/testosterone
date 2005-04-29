@@ -145,8 +145,8 @@ class Observer(StringIO):
     """This class executes, monitors, and reports on the execution of a pytest.
     """
 
-    passed = 0
-    failed = 0
+    passes = 0
+    failures = 0
     exceptions = 0
 
     stopwatch = None
@@ -182,7 +182,7 @@ class Observer(StringIO):
         if COMPARING:
             try:
                 if eval(statement, globals, locals):
-                    self.passed += 1
+                    self.passes += 1
                 else:
                     self.print_h2('Failure', statement, linenumber)
                     ast = parser.expr(statement)
@@ -194,7 +194,7 @@ class Observer(StringIO):
                             self.print_h3(text, evaled)
                     print
                     print
-                    self.failed += 1
+                    self.failures += 1
             except:
                 self.print_h2('Exception', statement, linenumber)
                 traceback.print_exc(file=self)
@@ -233,22 +233,22 @@ class Observer(StringIO):
     def print_summary(self):
         """output a header for the report
         """
-        total = self.passed + self.failed + self.exceptions
+        total = self.passes + self.failures + self.exceptions
         summary_data = {}
         summary_data['total']       = str(total).rjust(4)
-        summary_data['passed']      = str(self.passed).rjust(4)
-        summary_data['failed']      = str(self.failed).rjust(4)
+        summary_data['passes']      = str(self.passes).rjust(4)
+        summary_data['failures']    = str(self.failures).rjust(4)
         summary_data['exceptions']  = str(self.exceptions).rjust(4)
-        summary_data['seconds']     = self.stopwatch
+        summary_data['seconds']     = ('%.1f' % self.stopwatch).rjust(6)
 
         summary_list = [
-            "       passed: %(passed)s  ",
-            "       failed: %(failed)s  ",
-            "   exceptions: %(exceptions)s  ",
-            " ------------------- ",
-            "  total tests: %(total)s  ",
-            "                   ",
-            " time elapsed: %(seconds).1fs  ",
+            "        passes: %(passes)s    ",
+            "      failures: %(failures)s    ",
+            "    exceptions: %(exceptions)s    ",
+            " ---------------------- ",
+            "   total tests: %(total)s    ",
+            "                        ",
+            "  time elapsed: %(seconds)ss "
                         ]
         summary_list = [l % summary_data for l in summary_list]
 

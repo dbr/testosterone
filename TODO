@@ -4,13 +4,14 @@
 
 in wrap function, specify string with syntax tree manipulations instead of literal string delimiters
 None at end of output?
-if there are tests inside of a loop that is itself called from a test, the output is sandwiched
+=====DONE=====
 line up time elapsed
 
 
 future
 ----------------------------------------
 account for multiple small statements -- (need to make promote_node arbitrary?)
+if there are tests inside of a loop that is itself called from a test, the output is sandwiched (rewrite for curses will solve this)
 
 
 
