@@ -1,30 +1,17 @@
 #!/usr/bin/env python
-"""Pytest is an alternate python interpreter that interpolates its input with
-testing framework before handing it off to the standard python interpreter.
+"""This module defines three classes which provide the heavy lifting for the
+pytest interpreter:
 
-A testing framework is composed of three things:
+    1. Interpolator -- mixes testing framework into plain Python code
+    2. Observer -- runs the interpolated code and monitors its execution
+    3. utils -- convenience methods useful inside of a pytest script
 
-    1. fixture
-
-    2. test
-
-    3. reporting
-
-The pytest philosophy is to use the python language *as it stands* to supply the
-first two. Pytest treats python statements in the following way:
-
-    1. All stand-alone, explicit comparison statements are considered tests.
-       Tests which evaluate to True are tallied as 'passed'; False tests are
-       tallied as 'failed' and a failure report is outputed on the report.
-       Exceptions within tests are tallied as exceptions, and the traceback is
-       outputed in the report.
-
-    2. All print statements and pprint calls are channeled to the test report.
-       Exceptions raised here are not caught.
-
-    3. All other statements are considered fixture and are executed unaltered.
-
+For more information, see the pytest man page.
 """
+
+__author__ = 'Chad Whitacre'
+__version__ = '0.3'
+
 import parser, symbol, sys, time, token, traceback
 from StringIO import StringIO
 from ASTutils import ASTutils
@@ -33,7 +20,8 @@ class PyTestException(Exception):
     pass
 
 class Interpolator:
-    """ given a block of python text, interpolate our framework into it
+    """This class provides for interpolation of pytest framework into Python
+    code.
     """
 
     def interpolate(self, block):
@@ -154,6 +142,8 @@ class Interpolator:
 
 
 class Observer(StringIO):
+    """This class executes, monitors, and reports on the execution of a pytest.
+    """
 
     passed = 0
     failed = 0
@@ -199,7 +189,9 @@ class Observer(StringIO):
                     for term in ASTutils.getnodes(ast, 'expr'):
                         tast = parser.sequence2ast(self._expr2eval_input(term))
                         text = ASTutils.ast2text(tast)
-                        self.print_h3(text, eval(text, globals, locals))
+                        evaled = str(eval(text, globals, locals))
+                        if text <> evaled:
+                            self.print_h3(text, evaled)
                     print
                     print
                     self.failed += 1
@@ -215,14 +207,6 @@ class Observer(StringIO):
             exec statement in globals, locals
             print
             print
-
-    def _expr2eval_input(self, expr):
-        """given an expr as a list, promote it to an eval_input
-        """
-        return [symbol.eval_input,[symbol.testlist,[symbol.test,
-                [symbol.and_test,[symbol.not_test,[symbol.comparison,
-                 expr]]]]],[token.NEWLINE, ''],[token.ENDMARKER, '']]
-
 
 
     ##
@@ -321,6 +305,12 @@ class Observer(StringIO):
         lpadding = rpadding + ((i - slen) % 2)
         return ' '*rpadding + s + ' '*lpadding
 
+    def _expr2eval_input(self, expr):
+        """given an expr as a list, promote it to an eval_input
+        """
+        return [symbol.eval_input,[symbol.testlist,[symbol.test,
+                [symbol.and_test,[symbol.not_test,[symbol.comparison,
+                 expr]]]]],[token.NEWLINE, ''],[token.ENDMARKER, '']]
 
 
 

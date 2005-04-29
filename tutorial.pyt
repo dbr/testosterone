@@ -83,55 +83,76 @@ mylist = [1,2,3,4]
 ##
 
 # Now that we understand the basics of pytest, let's round out the picture with
-# some aspects of pytest that make it usable in the real world. One
-#
-# In the example above, we saw that assigning to a variable is
+# some aspects of pytest that make it useful in the real world. We've seen a
+# simple example of creating fixture in the variable assignment above:
 
+mylist = [1,2,3,4]
 
-# loop
+# In fact, there are no limits on how we build fixture: we have the entire
+# Python language at our disposal. For example, we could build a fixture using a
+# 'for' loop:
+
 mylist = [1,2,3,4,5,6,7,8,9,10]
-for x in mylist:
-    x != 8
+foo = False
+for i in mylist:
+    if i == 8:
+        foo = True
 
-# function, recursion, testing function calls with 'is True'
+# And then we can test our fixture:
+
+foo is False
+
+# Going further, we could define and test a recursive function:
+
 mylist = [1,2,3,[4,[5,6]],7,8,9,[10]]
-
 def hasitem(seq, i):
     for x in seq:
         if type(x) is type([]):
-            return hasitem(x, i)
+            hasitem(x, i)
         elif x == i:
             return True
     return False # default
 
-hasitem(mylist, 8) is True
+hasitem(mylist, 8) is True # test
 
+# But why stop there? Here's a class with a recursive classmethod:
 
-# class
+mylist = [1,2,3,8,[4,[5,6]],7,8,9,[10,8]]
 
-mylist = [1,2,3,[4,[5,6]],7,8,9,[10,8]]
-
-class collector:
-
-    basket = []
-
-    def collect(self, seq, i):
+class ilove8s:
+    yummy8s = []
+    def gimme8s(self, seq, i):
         for x in seq:
             if type(x) is type([]):
-                self.walk(seq, i)
+                self.gimme8s(x, i)
             elif x == i:
-                self.basket.append(candidate)
-    collect = classmethod(collect)
+                self.yummy8s.append(x)
+    gimme8s = classmethod(gimme8s)
 
-len(collector.collect(mylist, 8)) == 2
+ilove8s.gimme8s(mylist, 8)
+len(ilove8s.yummy8s) == 3 # test
 
+# Of course, what we *really* want to do is to build a fixture out of components
+# that are defined elsewhere. No problem. Here's a little test for whether the
+# random module lives up to its name:
+
+from sets import Set
+from random import choice
+
+foo = Set()
+for i in range(10):
+    foo.add(choice(range(10)))
+
+len(foo) > 1 # test
 
 
 # further detail:
 #   importing, classes, defs, loops
 #   printing
+#       whitespace
 #   exception handling
-#       SyntaxError, e.g.: 'mylist ='
+#       SyntaxError within parsed code e.g.: 'mylist ='
+#       SyntaxError caught earlier(?), e.g., comment w/o comment token
 #       AST error: malformed code (indent level))
 #       multiple small statements -> exception test (1 == 2; 3 == 1 + 2)
 
