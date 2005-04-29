@@ -14,6 +14,7 @@ traceback shows eval context, not actual script context: is it meaningful/useful
 
 clean up output formatting
     h3 for FAILUREs (need to execute all terms of each test and capture the output)
+    same header top and bottom, w/ results
     catch pprint
     catch sys.stdout.write (?)
     =====DONE=====
@@ -25,5 +26,7 @@ clean up cli
 write man page
 write tutorial
 write tests for ASTutils and pytest
+figure out how we want to package it
+    we want a pytest executable, do we also want a PyTest module?
 release it
 =====DONE=====

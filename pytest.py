@@ -33,6 +33,9 @@ import parser, symbol, sys, token, traceback
 from StringIO import StringIO
 from ASTutils import ASTutils
 
+class PyTestException(Exception):
+    pass
+
 class interpolator:
     """ given a block of python text, interpolate our framework into it
     """
@@ -67,7 +70,7 @@ class interpolator:
                     if cst[1][0] == symbol.simple_stmt:
 
                         # convert the cst stmt fragment to an AST
-                        ast = parser.sequence2ast(ASTutils.promote_stmt(cst))
+                        ast = parser.sequence2ast(ASTutils._stmt2file_input(cst))
 
                         if self._is_test(ast):
                             cst[1] = self._wrap(cst, COMPARING=True)[1]
@@ -95,14 +98,13 @@ class interpolator:
                 return self._line_number(node)
         return -1 # default
 
-
     def _wrap(self, stmt, COMPARING=False, PRINTING=False):
         """given a single simple comparison statement as a cst, return that
         statement wrapped with our testing function, also as a cst
         """
 
         # convert statement to a first-class cst
-        cst = ASTutils.promote_stmt(stmt)
+        cst = ASTutils._stmt2file_input(stmt)
 
         # convert first-class cst to source code, wrap it, and back again to cst
         old_source = ASTutils.ast2text(parser.sequence2ast(cst))
@@ -115,6 +117,44 @@ class interpolator:
 
         # and extract our statement from the first-class cst
         return cst[1]
+
+    def _stmt2file_input(self, cst):
+        """Given a stmt (list or tuple), promote it to a file_input.
+
+        Usage:
+
+            >>> import parser
+            >>> from ASTutils import ASTutils
+            >>> ast = parser.suite("print 'hello world'")
+            >>> stmt = ASTutils.getnode(ast, 'stmt')
+            >>> parser.sequence2ast(stmt)
+            Traceback (most recent call last):
+                ...
+            ParserError: parse tree does not use a valid start symbol
+            >>> stmt = _stmt2file_input(stmt)
+            >>> parser.sequence2ast(stmt)
+            <parser.st object at 0x817c090>
+
+        """
+        if type(cst) in (type(()), type([])):
+            if cst[0] == symbol.stmt:
+                if type(cst) is type(()):
+                    return ( symbol.file_input
+                           , cst
+                           , (token.NEWLINE, '')
+                           , (token.ENDMARKER,'')
+                            )
+                elif type(cst) is type([]):
+                    return [ symbol.file_input
+                           , cst
+                           , [token.NEWLINE, '']
+                           , [token.ENDMARKER,'']
+                            ]
+            else:
+                raise PyTestException, "input is not a stmt"
+        else:
+            raise PyTestException, "cst to promote must be list or tuple"
+
 
 
 class observer(StringIO):
@@ -144,6 +184,17 @@ class observer(StringIO):
                 if eval(statement, globals, locals):
                     self.passed += 1
                 else:
+                    # GET MORE INFO
+                    # resolve into components
+                    # promote each comparison to its own AST
+                    # evaluate each component and assign result to a variable
+                    # loop over each
+
+                    ast = parser.eval(statement)
+                    results = []
+                    for term in ASTutils.getnodes(ast, 'expr'):
+                        term = self._expr2eval_input(term)
+                        self.print_h3(term, eval(term, globals, locals))
                     self.print_h2('Failure', statement, linenumber)
                     print
                     print
@@ -160,6 +211,13 @@ class observer(StringIO):
             exec statement in globals, locals
             print
             print
+
+    self._expr2eval_input(self, expr):
+        """given an expr as a list, promote it to an eval_input
+        """
+        return [symbol.eval_input,[symbol.testlist,[symbol.test,
+                [symbol.and_test,[symbol.not_test,[symbol.comparison,
+                 [expr]]]]]],['NEWLINE', ''],['ENDMARKER', '']]
 
     ##
     # report generation
