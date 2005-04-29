@@ -25,10 +25,6 @@ first two. Pytest treats python statements in the following way:
     3. All other statements are considered fixture and are executed unaltered.
 
 """
-# save for clean context for tested program
-__globals__ = globals()
-__locals__  = locals()
-
 import parser, symbol, sys, token, traceback
 from StringIO import StringIO
 from ASTutils import ASTutils
@@ -36,7 +32,7 @@ from ASTutils import ASTutils
 class PyTestException(Exception):
     pass
 
-class interpolator:
+class Interpolator:
     """ given a block of python text, interpolate our framework into it
     """
 
@@ -70,7 +66,7 @@ class interpolator:
                     if cst[1][0] == symbol.simple_stmt:
 
                         # convert the cst stmt fragment to an AST
-                        ast = parser.sequence2ast(ASTutils._stmt2file_input(cst))
+                        ast = parser.sequence2ast(self._stmt2file_input(cst))
 
                         if self._is_test(ast):
                             cst[1] = self._wrap(cst, COMPARING=True)[1]
@@ -78,7 +74,7 @@ class interpolator:
                             cst[1] = self._wrap(cst, PRINTING=True)[1]
 
     def _is_test(self, ast):
-        """Given an AST, return a booleanq
+        """Given an AST, return a boolean
         """
         # a test is a comparison with more than one term
         if ASTutils.hasnode(ast, symbol.comparison):
@@ -104,7 +100,7 @@ class interpolator:
         """
 
         # convert statement to a first-class cst
-        cst = ASTutils._stmt2file_input(stmt)
+        cst = self._stmt2file_input(stmt)
 
         # convert first-class cst to source code, wrap it, and back again to cst
         old_source = ASTutils.ast2text(parser.sequence2ast(cst))
@@ -131,9 +127,9 @@ class interpolator:
             Traceback (most recent call last):
                 ...
             ParserError: parse tree does not use a valid start symbol
-            >>> stmt = _stmt2file_input(stmt)
+            >>> stmt = Interpolator()._stmt2file_input(stmt)
             >>> parser.sequence2ast(stmt)
-            <parser.st object at 0x817c090>
+            <parser.st object at 0x817c0d0>
 
         """
         if type(cst) in (type(()), type([])):
@@ -157,7 +153,7 @@ class interpolator:
 
 
 
-class observer(StringIO):
+class Observer(StringIO):
 
     passed = 0
     failed = 0
@@ -184,13 +180,7 @@ class observer(StringIO):
                 if eval(statement, globals, locals):
                     self.passed += 1
                 else:
-                    # GET MORE INFO
-                    # resolve into components
-                    # promote each comparison to its own AST
-                    # evaluate each component and assign result to a variable
-                    # loop over each
-
-                    ast = parser.eval(statement)
+                    ast = parser.expr(statement)
                     results = []
                     for term in ASTutils.getnodes(ast, 'expr'):
                         term = self._expr2eval_input(term)
@@ -212,7 +202,7 @@ class observer(StringIO):
             print
             print
 
-    self._expr2eval_input(self, expr):
+    def _expr2eval_input(self, expr):
         """given an expr as a list, promote it to an eval_input
         """
         return [symbol.eval_input,[symbol.testlist,[symbol.test,
@@ -261,22 +251,35 @@ class observer(StringIO):
     # formatting helpers
     ##
 
-    def print_h1(self, s):
+    def print_h1(self, h):
+        if len(h) >= 73:
+            h = h[:73] + '...'
         print "#"*80
-        print "# %s #" % self._center(s, 76)
+        print "# %s #" % self._center(h, 76)
         print "#"*80
         print
 
-    def print_h2(self, stype, s, lnum):
-        if len(s) >= 49:
-            s = s[:49] + '...'
+    def print_h2(self, stype, h, lnum):
+        if len(h) >= 49:
+            h = h[:49] + '...'
 
         print '+' + '-'*78 + '+'
         print '| %s  %s  LINE: %s |' % ( stype.upper().ljust(10)
-                                         , self._center(s, 52)
+                                         , self._center(h, 52)
                                          , str(lnum).rjust(4)
                                           )
         print '+' + '-'*78 + '+'
+        print
+
+    def print_h3(self, h, b):
+        """given a heading and a body, output them
+        """
+        if len(h) >= 73:
+            h = h[:73] + '...'
+
+        print h
+        print '-'*80
+        print b
         print
 
     def _center(self, s, i):
@@ -303,25 +306,9 @@ class utils:
     catchException = staticmethod(catchException)
 
 
+
+
 if __name__ == '__main__':
+    import doctest
+    doctest.testmod()
 
-    # interpret the arg on the command line as a filename to check
-
-    arg = sys.argv[1:2]
-    if not arg:
-        print "usage: $ pytest [-arh] [filename]"
-        raise SystemExit
-    else:
-        filename = arg[0]
-
-    original = file(filename).read()
-    interpolated = interpolator().interpolate(original)
-
-    heisenberg = observer(filename)
-
-    __globals__['__pytest__'] = sys.stdout = heisenberg
-    exec interpolated in __globals__, __locals__
-    sys.stdout = sys.__stdout__
-    sys.stderr = sys.__stderr__
-
-    print heisenberg.report()
