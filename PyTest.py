@@ -167,6 +167,14 @@ class Observer(StringIO):
     # main intercept wrapper
     ##
 
+    def run(self, text, globals, locals):
+        """run the interpolated test script
+        """
+        try:
+            exec text in globals, locals
+        except:
+            print >> sys.__stdout__, text
+
     def intercept(self, statement, linenumber, globals, locals,
                   COMPARING=False, PRINTING=False):
         """Given a statement, some context, and a couple optional flags, write

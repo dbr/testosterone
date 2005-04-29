@@ -18,11 +18,10 @@ interpolated = PyTest.Interpolator().interpolate(original)
 
 heisenberg = PyTest.Observer(filename)
 
-__globals__['__pytest__'] = heisenberg
-sys.stdout = heisenberg
-exec interpolated in __globals__, __locals__
+# turn stdout over to our tester, run the test, and then restore stdout
+__globals__['__pytest__'] = sys.stdout = heisenberg
+heisenberg.run(interpolated, __globals__, __locals__)
 sys.stdout = sys.__stdout__
-sys.stderr = sys.__stderr__
 
 print heisenberg.report()
 

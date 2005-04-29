@@ -5,25 +5,17 @@
 in wrap function, specify string with syntax tree manipulations instead of literal string delimiters
 account for multiple small statements
     make promote_node arbitrary?
-traceback shows eval context, not actual script context: is it meaningful/useful?
 
 
 ========================================
     FEATURES
 ========================================
 
-utils.reset
 clean up output formatting
     same header top and bottom, w/ results
-    catch pprint
-    catch sys.stdout.write (?)
     =====DONE=====
     line numbers
     h3 for FAILUREs (need to execute all terms of each test and capture the output)
-clean up cli
-    test*.py accept globs
-    -r recursive (implies -a)
-    -1 stop after first test
 write man page
 write tutorial
 write tests for ASTutils and pytest
@@ -31,3 +23,15 @@ figure out how we want to package it
     we want a pytest executable, do we also want a PyTest module?
 release it
 =====DONE=====
+
+
+future
+----------------------------------------
+utils.reset
+smarter output catching -- pprint, sys.stdout.write(?) -- patch .write()?
+clean up cli
+    test*.py accept globs
+    -a == *.pyt
+    -r recursive
+    -1 stop after first output (failure, output, exception)
+traceback shows eval context, not actual script context: is it meaningful/useful?

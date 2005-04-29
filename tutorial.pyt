@@ -40,7 +40,7 @@ foo == 'bar'
 # script's execution -- think of a scientist monitoring an experiment -- so that
 # at the end it can output a report.
 
-# More specifically, pytest treats all explicit, comparison statements as tests.
+# More specifically, pytest treats all explicit comparison statements as tests.
 # Comparison statements are explicit if they have one or more comparison
 # operators:
 #
@@ -65,11 +65,10 @@ mylist = [1,2,3,4]
 # information on the failed test in its final report. The passing tests will be
 # included in the report's summary but won't be mentioned explicitly.
 #
-
 # Once you've written a script that you'd like to run through pytest, you simply
 # call it from the command line like so:
 #
-#   $ pytest myscript.pyt
+#   $ pytest tutorial.pyt
 #
 # The 'pyt' extension indicates that this python script is intended for the
 # pytest interpreter. It could be run through the standard python interpreter,
@@ -77,12 +76,61 @@ mylist = [1,2,3,4]
 # don't do anything useful per se. See the "Usage Patterns" section below for
 # more ideas here.
 
-# So that's the basics: write a python script and run it through
+
+
+##
+# Section II: Further Detail
+##
+
+# Now that we understand the basics of pytest, let's round out the picture with
+# some aspects of pytest that make it usable in the real world. One
 #
+# In the example above, we saw that assigning to a variable is
+
+
+# loop
+mylist = [1,2,3,4,5,6,7,8,9,10]
+for x in mylist:
+    x == 8
+
+# function, recursion, testing function calls with 'is True'
+mylist = [1,2,3,[4,[5,6]],7,8,9,[10]]
+
+def hasitem(seq, i):
+    for x in seq:
+        if type(x) is type([]):
+            return hasitem(x, i)
+        elif x == i:
+            return True
+    return False # default
+
+hasitem(mylist, 8) is True
+
+
+# class
+
+mylist = [1,2,3,[4,[5,6]],7,8,9,[10,8]]
+
+class collector:
+
+    basket = []
+
+    def collect(self, seq, i):
+        for x in seq:
+            if type(x) is type([]):
+                self.walk(seq, i)
+            elif x == i:
+                self.basket.append(candidate)
+    collect = classmethod(collect)
+
+len(collector.collect(mylist, 8)) == 2
 
 
 
-
+# further detail:
+#   importing, classes, defs, loops
+#   printing
+#   exception handling (SyntaxError: 'mylist ='; AST error: malformed code (indent level))
 
 def foo():
     raise 'bar'
@@ -137,9 +185,9 @@ exc is FooException
 
 
 
-# printing
-# looping
-# exception handling
+# utils:
+#   catching exceptions
+#   reset button
 # usage patterns:
 #   complements doctest -- similar philosophy
 #   replaces unittest
@@ -147,6 +195,3 @@ exc is FooException
 #   separate testing script
 #   working with the PyTest module directly
 #   using non-standard python installations
-# utils:
-#   catching exceptions
-#   reset button
