@@ -122,7 +122,7 @@ class Interpolator:
             >>> import parser
             >>> from ASTutils import ASTutils
             >>> ast = parser.suite("print 'hello world'")
-            >>> stmt = ASTutils.getnode(ast, 'stmt')
+            >>> stmt = ASTutils.getnodes(ast, 'stmt')[0]
             >>> parser.sequence2ast(stmt)
             Traceback (most recent call last):
                 ...
@@ -180,12 +180,12 @@ class Observer(StringIO):
                 if eval(statement, globals, locals):
                     self.passed += 1
                 else:
-                    ast = parser.expr(statement)
-                    results = []
-                    for term in ASTutils.getnodes(ast, 'expr'):
-                        term = self._expr2eval_input(term)
-                        self.print_h3(term, eval(term, globals, locals))
                     self.print_h2('Failure', statement, linenumber)
+                    ast = parser.expr(statement)
+                    for term in ASTutils.getnodes(ast, 'expr'):
+                        tast = parser.sequence2ast(self._expr2eval_input(term))
+                        text = ASTutils.ast2text(tast)
+                        self.print_h3(text, eval(text, globals, locals))
                     print
                     print
                     self.failed += 1
@@ -207,7 +207,7 @@ class Observer(StringIO):
         """
         return [symbol.eval_input,[symbol.testlist,[symbol.test,
                 [symbol.and_test,[symbol.not_test,[symbol.comparison,
-                 [expr]]]]]],['NEWLINE', ''],['ENDMARKER', '']]
+                 expr]]]]],[token.NEWLINE, ''],[token.ENDMARKER, '']]
 
     ##
     # report generation

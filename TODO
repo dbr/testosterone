@@ -13,12 +13,12 @@ traceback shows eval context, not actual script context: is it meaningful/useful
 ========================================
 
 clean up output formatting
-    h3 for FAILUREs (need to execute all terms of each test and capture the output)
     same header top and bottom, w/ results
     catch pprint
     catch sys.stdout.write (?)
     =====DONE=====
     line numbers
+    h3 for FAILUREs (need to execute all terms of each test and capture the output)
 clean up cli
     test*.py accept globs
     -r recursive (implies -a)
