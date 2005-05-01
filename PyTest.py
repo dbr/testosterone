@@ -29,11 +29,12 @@ class Interpolator:
         """return the original block with our interpolations
         """
         self.cst = parser.suite(block).tolist(line_info=True)
-        self.walk(self.cst)
+        self._walk(self.cst)
         ast = parser.sequence2ast(self.cst)
         return ASTutils.ast2text(ast)
+    interpolate = classmethod(interpolate)
 
-    def walk(self, cst):
+    def _walk(self, cst):
         """walk an AST list (a cst?) and do our interpolation
         """
         i = 0
@@ -41,7 +42,7 @@ class Interpolator:
             i += 1
             if type(node) is type([]):
                 # we have a list of subnodes; recurse
-                self.walk(node)
+                self._walk(node)
             else:
                 # we have an actual node; interpret it and act accordingly
 
@@ -61,6 +62,7 @@ class Interpolator:
                             cst[1] = self._wrap(cst, COMPARING=True)[1]
                         elif ASTutils.hasnode(ast, symbol.print_stmt):
                             cst[1] = self._wrap(cst, PRINTING=True)[1]
+    _walk = classmethod(_walk)
 
     def _is_test(self, ast):
         """Given an AST, return a boolean
@@ -70,6 +72,7 @@ class Interpolator:
             if ASTutils.hasnode(ast, symbol.comp_op):
                 return True
         return False
+    _is_test = classmethod(_is_test)
 
     def _line_number(self, cst):
         """given a single stmt cst w/ line numbers, return the first line
@@ -82,6 +85,7 @@ class Interpolator:
                         return node[2]
                 return self._line_number(node)
         return -1 # default
+    _line_number = classmethod(_line_number)
 
     def _escape_source(self, s):
         """Given a string, make it safe to be strunged itself
@@ -99,7 +103,7 @@ class Interpolator:
         s = s.replace("'", "\\'")
         s = s.replace('"', '\\"')
         return s
-
+    _escape_source = classmethod(_escape_source)
 
     def _wrap(self, stmt, COMPARING=False, PRINTING=False):
         """given a single simple comparison statement as a cst, return that
@@ -124,6 +128,7 @@ __pytest__.intercept("%s", %s, globals(), locals(), COMPARING=%s,PRINTING=%s)"""
         # convert back to a cst, extract our statement, and return
         cst = parser.suite(new_source).tolist()
         return cst[1]
+    _wrap = classmethod(_wrap)
 
     def _stmt2file_input(self, cst):
         """Given a stmt (list or tuple), promote it to a file_input.
@@ -163,7 +168,7 @@ __pytest__.intercept("%s", %s, globals(), locals(), COMPARING=%s,PRINTING=%s)"""
                 raise PyTestException, "input is not a stmt"
         else:
             raise PyTestException, "cst to promote must be list or tuple"
-
+    _stmt2file_input = classmethod(_stmt2file_input)
 
 
 class Observer(StringIO):
@@ -247,9 +252,9 @@ class Observer(StringIO):
                 exec statement in globals, locals
             except:
                 traceback.print_exc(file=self)
+                self.nontest_excs += 1
             print
             print
-            self.nontest_excs += 1
 
 
     ##
