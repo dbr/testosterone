@@ -19,13 +19,18 @@ if there are tests inside of a loop that is itself called from a test, the outpu
     FEATURES
 ========================================
 
-using non-standard python installations?
-running ast2text against the standard library unit tests?
+clean up cli
+    test*.py accept globs
+    -a == *.pyt
+    =====DONE=====
 write man page
 figure out how we want to package it
-    we want a pytest executable, do we also want a PyTest module? yes :-)
-set up software.zetweb.com & svn.zetaweb.com (!)
+    SCRIPTS
+    but man page needs Makefile?
 release it
+    epydoc -> docs.zetadev.com
+    package w/ distutils
+    www.zetadev.com/releases/
 =====DONE=====
 write tests for ASTutils and pytest
 write tutorial
@@ -33,6 +38,7 @@ clean up output formatting
     same header top and bottom, w/ results
     line numbers
     h3 for FAILUREs (need to execute all terms of each test and capture the output)
+set up software.zetweb.com & svn.zetaweb.com (!)
 
 
 future
@@ -40,8 +46,6 @@ future
 utils.reset -- re-sanitize the testing context (globals, locals, modules)
 smarter output catching -- pprint, sys.stdout.write(?) -- patch .write()?
 clean up cli
-    test*.py accept globs
-    -a == *.pyt
     -r recursive
     -1 stop after first output (failure, output, exception)
 traceback shows eval context, not actual script context: is it meaningful/useful?
@@ -49,3 +53,4 @@ modify to run old PyUnit tests as well? (should just be able to intercept assert
 curses app! index of detailed reports, enter index number to see detail; F5 to refresh :-)
 verbose mode; curses app would need to show detailed reports for passed tests as well
 validate usage with non-standard python installations
+running ast2text against the standard library unit tests
