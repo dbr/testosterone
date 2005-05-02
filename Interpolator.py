@@ -6,8 +6,10 @@ import parser
 import symbol
 import token
 
-from pytest import PyTestException
 from pytest.ASTutils import ASTutils
+
+class PyTestException(Exception):
+    """Exception for pytest"""
 
 class Interpolator:
     """This class interpolates pytest framework into Python code.
