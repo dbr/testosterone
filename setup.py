@@ -15,8 +15,8 @@ classifiers = [
 
 setup( name = 'pytest'
      , version = '0.3'
-     , packages = ['src']
-     , scripts = ['pytest.py']
+     , package_dir = {'pytest':'src'}
+     , scripts = ['src/pytest.py']
      , description = 'Pytest is a testing interpreter for Python.'
      , author = 'Chad Whitacre'
      , author_email = 'chad [at] zetaweb [dot] com'
