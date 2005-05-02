@@ -46,22 +46,25 @@ doc:
 
 
 # release parameters
-version=0.3
-man_prefix = /usr/local/www/www.zetadev.com/software/pytest/trunk/man
+version=trunk
+man_prefix = /usr/local/www/www.zetadev.com/software/pytest/${version}/man
 
 release:clean doc
 # do a release; not using setup.py because sdist doesn't allow for Makefile, etc.
 
 # build a source distribution
 	mkdir -p pytest-${version}/doc
+	cp -r doc/tutorial.pyt pytest-${version}/doc
 	cp -r bin pytest-${version}/
 	cp -r man pytest-${version}/
 	cp -r site-packages pytest-${version}/
 	cp README Makefile setup.py pytest-${version}/
 
 # tar it up
-    mkdir dist
+	mkdir dist
 	tar zcf dist/pytest-${version}.tar.gz pytest-${version}
 	tar cf dist/pytest-${version}.tar pytest-${version}
 	bzip2 dist/pytest-${version}.tar
 
+# and clean up
+	rm -rf pytest-${version}
