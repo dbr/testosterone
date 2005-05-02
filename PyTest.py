@@ -1,12 +1,5 @@
 #!/usr/bin/env python
-"""This module defines three classes which provide the heavy lifting for the
-pytest interpreter:
-
-    1. Interpolator -- mixes testing framework into plain Python code
-    2. Observer -- runs the interpolated code and monitors its execution
-    3. utils -- convenience methods useful inside of a pytest script
-
-For more information, see the pytest documentation.
+"""This module provides the heavy lifting for the pytest interpreter.
 """
 
 import linecache

@@ -1,20 +1,27 @@
 #!/usr/bin/env python
 """Pytest is a testing interpreter for Python.
 
-Usage: Pytest takes a single argument, which is a Unix filename pattern. Pytest
-    will test all files in the current directory that match the pattern,
-    outputing a report at the end. Only non-passing tests and files with
-    non-passing tests will be detailed in the report. Remember to quote a
-    pattern with special characters so that your shell does not expand it
-    before we have a chance to.
+Usage:
+
+    Pytest takes a single argument, which is a Unix filename pattern. Pytest
+    will take all files in the current directory that match the pattern, and
+    will run them through the main Python interpreter, monitoring their
+    execution. Afterwards it will give you a report showing summary information
+    and detailed information on any non-passing tests.
+
 
 Examples:
 
-    # Test a single file, sending the report to your pager:
-    $ pytest tutorial.pyt | less
+    Test a single file, sending the report to your pager:
 
-    # Test all files in the current directory with the .pyt extension:
-    $ pytest '*.pyt'
+        $ pytest tutorial.pyt | less
+
+    Test all files in the current directory with the .pyt extension:
+
+        $ pytest '*.pyt'
+
+    Remember to quote a pattern with special characters so that your shell does
+    not expand it before pytest has a chance to.
 
 
 For a detailed discussion of pytest, please see the file doc/tutorial.pyt
@@ -43,29 +50,17 @@ import os
 
 import PyTest
 
-
-
-##
-# Parse the command line argument.
-##
-
-arg = sys.argv[1:2]
-if not arg:
-    print __doc__
-    raise SystemExit
-else:
-    fnpattern = arg[0]
-    filenames = fnmatch.filter(os.listdir('.'), fnpattern)
-
-
-
 ##
 # Set up some test runners.
 ##
 
 def test_one(filename, report_buffer=None):
-    """Given a filename and an optional report buffer, test and report on a
-    single file.
+
+    """Given a filename, test and report on that single file.
+
+    Only non-passing tests will be detailed in the report. An optional
+    report_buffer may be passed in to capture the report output.
+
     """
 
     heisenberg = PyTest.Observer()
@@ -106,7 +101,11 @@ def test_one(filename, report_buffer=None):
 
 
 def test_all(filenames):
+
     """Given a list of filenames, test and report on all the files.
+
+    Only files with non-passing tests will be detailed in the report.
+
     """
 
     # determine the heading for our report
@@ -135,6 +134,24 @@ def test_all(filenames):
 
 
 if __name__ == '__main__':
+
+    ##
+    # Parse the command line argument.
+    ##
+
+    arg = sys.argv[1:2]
+    if not arg:
+        print __doc__
+        raise SystemExit
+    else:
+        fnpattern = arg[0]
+        filenames = fnmatch.filter(os.listdir('.'), fnpattern)
+
+
+    ##
+    # Pick and run a test runner.
+    ##
+
     if len(filenames) == 0:
         print 'filename pattern did not match any files in the current directory'
         sys.exit(0)
