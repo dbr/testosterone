@@ -1,0 +1,185 @@
+.Dd May 2, 2005
+.Os
+.Dt PYTEST 1 LOCAL
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh NAME
+.Nm pytest
+.Nd a testing interpreter for Python
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh SYNOPSIS
+.Nm
+.Ar file-pattern
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh DESCRIPTION
+When you set the 'svn:eol-style' property on a file in a Subversion repository,
+.Xr svn 1
+checks the line endings in that file for consistency. If the newlines are
+inconsistent -- i.e., they are a mixture of Windows ('\er\en'), legacy Macintosh
+('\er'), and/or Unix ('\en') newlines -- then an error is raised and the propset
+fails. The file can still be forced into the repository, but then you have
+broken data in your repo.
+
+The solution is to clean up the newlines in your text files before trying to
+commit them. This can be done for single files with a utility such as
+.Xr dos2unix 1 .
+.Nm
+is a
+.Xr python 1
+program that makes the job easier for a whole tree of files.
+
+.Nm
+walks the tree rooted at
+.Ar path
+(which defaults to the current working directory) and does one of three things,
+depending on
+.Ar subcommand :
+.Bl -hang -offset indent
+.\"
+.\"
+.It Nm clean
+cleans up the line endings in all text files
+.\"
+.\"
+.It Nm confgen
+prints a minimal
+.Xr svn 1
+configuration file with all file extensions and filenames without an extension
+in an auto-props section, setting 'svn:eol-style' to 'native'.
+.\"
+.\"
+.It Nm find
+prints the paths of all text files
+.El
+.Pp
+
+For
+.Nm clean
+and
+.Nm find ,
+the definition of a text file
+is taken from the current user's
+.Xr svn 1
+configuration file, which is assumed to be at:
+.\"
+.\"
+.Bd -literal -offset indent
+.Pa ~/.subversion/config
+.Ed
+.Pp
+
+Text files are those with filenames matching any
+.Xr glob 1
+in the [auto-props]
+section for which the 'svn:eol-style' property is set. All Windows and legacy
+Macintosh newlines in these files are converted to Unix newlines.
+
+Note that
+.Ar path
+does not have to be an
+.Xr svn 1
+working copy. In fact,
+.Nm svneol Ns 's
+primary use case is preparing a large, non-versioned tree for initial import
+into a Subversion repository.
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh IMPLEMENTATION NOTES
+This program is known to work with the following software:
+.Pp
+.Bl -dash -offset indent -compact
+.It
+FreeBSD 4.11
+.It
+Python 2.4
+.It
+Subversion 1.1.0
+.El
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh FILES
+.Bd -literal
+.Pa ~/.subversion/config
+.Ed
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh EXAMPLES
+.Bd -literal
+% cd ~/FooProject/
+% svneol confgen > ~/.subversion/config
+% vi ~/.subversion/config # manually remove extensions for binary files
+% svneol find | less
+\&... # assuage any paranoia that binary files will be broken
+% svneol clean
+locating text files ...................... 952 found
+scrubbing newlines ..................... 945 files cleaned
+%
+.Ed
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh SEE ALSO
+.Xr dos2unix 1 ,
+.Xr glob 1 ,
+.Xr python 1 ,
+.Xr svn 1
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh HISTORY
+.Bl -hang
+.It Em 2005-04-01
+released version 0.8
+.El
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh AUTHORS
+.Bl -item -compact
+.It
+(c) 2005 Chad Whitacre <http://www.zetadev.com/>
+.It
+This program is beerware. If you like it, buy me a beer someday.
+.It
+No warranty is expressed or implied.
+.El
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh TODO
+.Bl -dash
+.It
+refactor for getopt/optparse and add an argument: path to config file
+.It
+big enough that it could use some unit tests
+.It
+nice to have svneol count, output like svneol clean but w/o changing files
+.El
