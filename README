@@ -15,6 +15,8 @@ Here's how to install pytest and verify that it works:
     $ cd doc
     $ pytest tutorial.pyt
     ... # should see report output
+    $ less tutorial.pyt
+    ... # the best way to learn about pytest
 
 
 ========================================
