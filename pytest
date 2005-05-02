@@ -3,26 +3,35 @@
 
 Usage: Pytest takes a single argument, which is a Unix filename pattern. Pytest
     will test all files in the current directory that match the pattern,
-    outputing a report at the end.
+    outputing a report at the end. Only non-passing tests and files with
+    non-passing tests will be detailed in the report. Remember to quote a
+    pattern with special characters so that your shell does not expand it
+    before we have a chance to.
 
-Example:
+Examples:
 
-    $ pytest *.pyt
+    # Test a single file, sending the report to your pager:
+    $ pytest TUTORIAL.pyt | less
+
+    # Test all files in the current directory with the .pyt extension:
+    $ pytest '*.pyt'
 
 
-For a detailed discussion, please see the file TUTORIAL.pyt included with the
-distribution.
+For a detailed discussion of pyt files, please see the file TUTORIAL.pyt
+included with the distribution.
 
 """
 
 ##
-# Set aside a clean context for the test script.
+# Set aside a clean testing environment.
 ##
+
 import sys
 __modules__ = sys.modules.copy()
 # del __modules__['sys'] # afaict this doesn't actually unload the module :/
 __globals__ = globals()
 __locals__  = locals()
+
 
 
 ##
@@ -35,6 +44,7 @@ __author_email__ = 'chad [at] zetadev [dot] com'
 __url__ = 'http://www.zetadev.com/software/'
 
 import fnmatch
+import os
 
 import PyTest
 
@@ -50,28 +60,92 @@ if not arg:
     raise SystemExit
 else:
     fnpattern = arg[0]
-    tests = fnmatch.filter(os.listdir(), fnpattern)
-    print tests
-    raise SystemExit
+    filenames = fnmatch.filter(os.listdir('.'), fnpattern)
+
 
 
 ##
-# Instantiate our tester objects and execute the test.
+# Set up some test runners.
 ##
 
-heisenberg = PyTest.Observer(filename)
-heisenberg.start_timer()
+def test_one(filename, report_buffer=None):
+    """Given a filename and an optional report buffer, test and report on a
+    single file.
+    """
 
-original = file(filename).read()
-interpolated = PyTest.Interpolator.interpolate(original)
+    heisenberg = PyTest.Observer()
+    heisenberg.start_timer()
 
-# sanitize sys.modules
-sys.modules = __modules__
+    # read in the file to test and mix in our testing framework
+    original = file(filename).read()
+    interpolated = PyTest.Interpolator.interpolate(original)
 
-# turn stdout over to our tester, run the test, and then restore stdout
-__globals__['__pytest__'] = sys.stdout = heisenberg
-heisenberg.run(filename, interpolated, __globals__, __locals__)
-sys.stdout = sys.__stdout__
+    # set up the lab environment and run the test
+    sys.modules = __modules__
+    __globals__['__pytest__'] = sys.stdout = heisenberg
+    heisenberg.run(filename, interpolated, __globals__, __locals__)
 
-heisenberg.stop_timer()
-heisenberg.report()
+    heisenberg.stop_timer()
+
+    if report_buffer is not None:
+        # we are being run as part of a test suite, so send our report to
+        # the main report buffer ...
+        if (heisenberg.failures + heisenberg.exceptions) > 0:
+            # but only if there is something to report
+            sys.stdout = report_buffer
+            heisenberg.report()
+            sys.stdout = sys.__stdout__
+        else:
+            # nothing to report, so just be quiet
+            pass
+    else:
+        # otherwise send the report to the standard output
+        sys.stdout = sys.__stdout__
+        heisenberg.report()
+
+    return { 'passes'       : heisenberg.passes
+           , 'failures'     : heisenberg.failures
+           , 'exceptions'   : heisenberg.exceptions
+           , 'nontest_excs' : heisenberg.nontest_excs
+            }
+
+
+def test_all(filenames):
+    """Given a list of filenames, test and report on all the files.
+    """
+
+    # determine the heading for our report
+    if len(filenames) == 1:
+        file_files = 'file'
+    else:
+        file_files = 'files'
+    heading = 'EXECUTIVE SUMMARY: %s %s' % (len(filenames), file_files)
+
+    # 'management' -- cause all it cares about is the executive summary
+    management = PyTest.Observer()
+    management.start_timer()
+
+    for filename in filenames:
+
+        results = test_one(filename, management)
+
+        # update the executive summary
+        management.passes += results['passes']
+        management.failures += results['failures']
+        management.exceptions += results['exceptions']
+        management.nontest_excs += results['nontest_excs']
+
+    management.stop_timer()
+    management.report(heading)
+
+
+if __name__ == '__main__':
+    if len(filenames) == 0:
+        print 'filename pattern did not match any files in the current directory'
+        sys.exit(0)
+    elif len(filenames) > 1:
+        test_all(filenames)
+    elif filenames[0] == fnpattern:
+        test_one(filenames[0])
+    else:
+        test_all(filenames)

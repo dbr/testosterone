@@ -9,7 +9,8 @@ description = description.strip(linesep)
 
 setup( name = base.__name__
      , version = base.__version__
-     , py_modules = ['ASTutils']
+     , py_modules = ['PyTest']
+     , scripts = ['pytest']
      , description = description
      , author = base.__author__
      , author_email = base.__author_email__

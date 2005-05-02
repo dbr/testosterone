@@ -188,11 +188,6 @@ class Observer(StringIO):
 
     stopwatch = None
 
-    def __init__(self, filename, *arg, **kw):
-        self.filename = filename
-        StringIO.__init__(self, *arg, **kw)
-
-
 
     ##
     # main callables
@@ -202,6 +197,9 @@ class Observer(StringIO):
         """run the interpolated test script; if that fails, run the original
         script so that the traceback is accurate
         """
+
+        # save this for a default header for our report
+        self.filename = filename
 
         try:
             exec interpolated in globals, locals
@@ -278,12 +276,16 @@ class Observer(StringIO):
     # report generation
     ##
 
-    def report(self):
-        self.print_summary()
-        print self.getvalue()
-        self.print_summary()
+    def report(self, heading=''):
 
-    def print_summary(self):
+        if not heading:
+            heading = self.filename # this assumes we've been run
+
+        self.print_summary(heading)
+        print self.getvalue()
+        self.print_summary(heading)
+
+    def print_summary(self, heading):
         """output a header for the report
         """
         total = self.passes + self.failures + self.exceptions
@@ -310,7 +312,7 @@ class Observer(StringIO):
                         ]
         summary_list = [l % summary_data for l in summary_list]
 
-        self.print_h1(self.filename)
+        self.print_h1(heading)
         print '#%s#' % (' '*78,)
         for line in summary_list:
             print '# %s #' % self._center(line, 76)

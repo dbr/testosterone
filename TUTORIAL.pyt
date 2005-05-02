@@ -100,7 +100,7 @@ mylist = [1,2,3,4]
 # Once you've written a script that you'd like to run through pytest, you simply
 # call it from the command line like so:
 #
-#   $ pytest tutorial.pyt
+#   $ pytest TUTORIAL.pyt
 #
 # The 'pyt' extension indicates that this python script is intended for the
 # pytest interpreter. It could be run through the standard Python interpreter,
@@ -204,7 +204,7 @@ len(foo) > 1 # test
 # For example, here's pytest's summary when executing this present script:
 
 ################################################################################
-#                                 tutorial.pyt                                 #
+#                                 TUTORIAL.pyt                                 #
 ################################################################################
 #                                                                              #
 #                                    passes:   10                              #
@@ -230,14 +230,14 @@ len(foo) > 1 # test
 # exceptions). For example, here is an exception:
 """
 +------------------------------------------------------------------------------+
-| EXCEPTION                     foo ( ) is True                     LINE:  311 |
+| EXCEPTION                     foo ( ) is True                     LINE:  322 |
 +------------------------------------------------------------------------------+
 
 Traceback (most recent call last):
-  File "/home/whit537/pytest/PyTest.py", line 228, in intercept
+  File "/home/whit537/pytest/PyTest.py", line 231, in intercept
     if eval(statement, globals, locals):
   File "<string>", line 0, in ?
-  File "<string>", line 64, in foo
+  File "<string>", line 66, in foo
 RuntimeError: ouch!
 """
 
