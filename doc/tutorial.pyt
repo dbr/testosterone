@@ -375,9 +375,9 @@ except:
 exc is Exception # test
 
 
-# The pytest package provides a utility class that has a convenience method
-# called 'catch_exc' for this. This is currently the only method in
-# pytest.utils:
+# The PyTest package on which pytest is built provides a utility class that has
+# a convenience method called 'catch_exc' for this. This is currently the only
+# method in PyTest.utils:
 
 from PyTest import utils
 

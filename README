@@ -12,6 +12,7 @@ Here's how to install pytest and verify that it works:
     $ tar zxf pytest-trunk.tar.gz
     $ cd pytest-trunk
     $ sudo make install
+    ... # installation output
     $ cd doc
     $ pytest tutorial.pyt
     ... # should see report output
@@ -32,4 +33,4 @@ For more information, please consult the following resources:
 
     - Documentation and archives are also available at:
 
-        http://www.zetadev.com/software/
+        http://www.zetadev.com/software/pytest/
