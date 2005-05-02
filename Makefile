@@ -11,14 +11,16 @@ configure: clean
 
 # create the man page to be installed
 	rm -f pytest.1.gz
-	gzip -c -9 man/pytest.1 > pytest.1.gz
+	gzip -c -9 man/man1/pytest.1 > pytest.1.gz
 	chmod 444 pytest.1.gz
 
 clean:
 # delete the script and man page to be installed, as well as the python build
-# directory
+# directory, and the auto-generated docs
 	rm -rf pytest pytest.1.gz
 	rm -rf build
+	rm -rf doc/api
+	rm -rf doc/python.1.html
 
 install: configure
 # after deleting and recreating the script and man page, install them
@@ -32,3 +34,10 @@ uninstall:
 	rm -f ${prefix}/bin/pytest
 	rm -f ${prefix}/man/man1/pytest.1.gz
 # note that the result of setup.py is not undone
+
+
+release:install
+# after installing the program, do some things for a release
+	python setup.py sdist --formats=gztar,bztar,zip
+	epydoc -o doc/api site-packages/PyTest site-packages/ASTutils
+	man pytest | rman -f HTML > doc/pytest.1.html
