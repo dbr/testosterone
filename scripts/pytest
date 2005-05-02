@@ -11,13 +11,13 @@ Usage: Pytest takes a single argument, which is a Unix filename pattern. Pytest
 Examples:
 
     # Test a single file, sending the report to your pager:
-    $ pytest TUTORIAL.pyt | less
+    $ pytest tutorial.pyt | less
 
     # Test all files in the current directory with the .pyt extension:
     $ pytest '*.pyt'
 
 
-For a detailed discussion of pyt files, please see the file TUTORIAL.pyt
+For a detailed discussion of pyt files, please see the file doc/tutorial.pyt
 included with the distribution.
 
 """

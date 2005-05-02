@@ -100,7 +100,7 @@ mylist = [1,2,3,4]
 # Once you've written a script that you'd like to run through pytest, you simply
 # call it from the command line like so:
 #
-#   $ pytest TUTORIAL.pyt
+#   $ pytest tutorial.pyt
 #
 # The 'pyt' extension indicates that this python script is intended for the
 # pytest interpreter. It could be run through the standard Python interpreter,
@@ -204,7 +204,7 @@ len(foo) > 1 # test
 # For example, here's pytest's summary when executing this present script:
 
 ################################################################################
-#                                 TUTORIAL.pyt                                 #
+#                                 tutorial.pyt                                 #
 ################################################################################
 #                                                                              #
 #                                    passes:   10                              #

@@ -2,7 +2,7 @@
 from distutils.core import setup
 
 classifiers = [
-  , 'Development Status :: 4 - Beta'
+    'Development Status :: 4 - Beta'
   # 'Development Status :: 5 - Production/Stable'
   , 'Environment :: Console'
   , 'Intended Audience :: Developers'
@@ -15,8 +15,8 @@ classifiers = [
 
 setup( name = 'pytest'
      , version = '0.3'
-     , py_modules = ['PyTest']
-     , scripts = ['pytest']
+     , py_modules = ['ASTutils','PyTest']
+     , scripts = ['scripts/pytest']
      , description = 'Pytest is a testing interpreter for Python.'
      , author = 'Chad Whitacre'
      , author_email = 'chad [at] zetaweb [dot] com'
