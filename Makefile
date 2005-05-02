@@ -22,7 +22,7 @@ clean:
 	rm -rf pytest pytest.1.gz
 	rm -rf doc/api
 	rm -rf doc/python.1.html
-rm -rf dist
+	rm -rf dist
 
 
 install: configure
