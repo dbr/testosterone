@@ -38,11 +38,6 @@ __locals__  = locals()
 # Now proceed as normal.
 ##
 
-__version__ = '0.3'
-__author__ = 'Chad Whitacre'
-__author_email__ = 'chad [at] zetadev [dot] com'
-__url__ = 'http://www.zetadev.com/software/'
-
 import fnmatch
 import os
 

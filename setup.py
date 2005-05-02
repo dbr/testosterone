@@ -1,18 +1,25 @@
 #!/usr/bin/env python
 from distutils.core import setup
-from os import linesep
 
-import pytest as base
+classifiers = [
+  , 'Development Status :: 4 - Beta'
+  # 'Development Status :: 5 - Production/Stable'
+  , 'Environment :: Console'
+  , 'Intended Audience :: Developers'
+  , 'License :: Freeware'
+  , 'Natural Language :: English'
+  , 'Operating System :: OS Independent'
+  , 'Programming Language :: Python'
+  , 'Topic :: Software Development :: Testing'
+                ]
 
-description = base.__doc__.split(linesep+linesep)[0]
-description = description.strip(linesep)
-
-setup( name = base.__name__
-     , version = base.__version__
+setup( name = 'pytest'
+     , version = '0.3'
      , py_modules = ['PyTest']
      , scripts = ['pytest']
-     , description = description
-     , author = base.__author__
-     , author_email = base.__author_email__
-     , url = base.__url__
+     , description = 'Pytest is a testing interpreter for Python.'
+     , author = 'Chad Whitacre'
+     , author_email = 'chad [at] zetaweb [dot] com'
+     , url = 'http://www.zetadev.com/software/'
+     , classifiers = classifiers
       )
