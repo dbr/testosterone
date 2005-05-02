@@ -20,6 +20,7 @@ configure: clean
 clean:
 # remove all of the cruft that gets auto-generated on doc/install/release
 	rm -rf pytest pytest.1.gz
+    rm -rf build
 	rm -rf doc/api
 	rm -rf doc/python.1.html
 	rm -rf dist
