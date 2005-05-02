@@ -1,0 +1,26 @@
+Pytest is a testing interpreter for Python.
+
+========================================
+    INSTALLATION
+========================================
+
+    $ cd ~
+    $ fetch http://www.zetadev.com/software/pytest/latest/dist/pytest-0.3.tar.gz
+    $ tar zxf pytest-0.3.tar.gz
+    $ cd pytest-0.3
+
+
+========================================
+    RESOURCES
+========================================
+
+For more information, please consult the following resources:
+
+    - The manual page is available in HTML at doc/pytest.1.html in this
+    distribution, and via man 1 pytest.
+
+    - The API documentation is at doc/api/.
+
+    - Documentation and archives are also available at:
+
+        http://www.zetadev.com/software/
