@@ -12,6 +12,7 @@ future
 ----------------------------------------
 account for multiple small statements -- (need to make promote_node arbitrary?)
 if there are tests inside of a loop that is itself called from a test, the output is sandwiched (rewrite for curses will solve this)
+on CRISIS, output gets written to report twice
 
 
 
@@ -19,20 +20,19 @@ if there are tests inside of a loop that is itself called from a test, the outpu
     FEATURES
 ========================================
 
-clean up cli
-    test*.py accept globs
-    -a == *.pyt
-    =====DONE=====
-write man page
 figure out how we want to package it
     SCRIPTS
     but man page needs Makefile?
 release it
+    =====DONE=====
     epydoc -> docs.zetadev.com
     package w/ distutils
     www.zetadev.com/releases/
-    register with PyPI
+    register with PyPI?
 =====DONE=====
+write man page
+clean up cli
+    test*.py accept filename patterns
 write tests for ASTutils and pytest
 write tutorial
 clean up output formatting
@@ -47,6 +47,7 @@ future
 utils.reset -- re-sanitize the testing context (globals, locals, modules)
 smarter output catching -- pprint, sys.stdout.write(?) -- patch .write()?
 clean up cli
+    -a = *.pyt
     -r recursive
     -1 stop after first output (failure, output, exception)
 traceback shows eval context, not actual script context: is it meaningful/useful?
