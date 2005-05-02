@@ -4,6 +4,11 @@
 
 prefix=/usr/local
 
+# release parameters -- not meaningful for install
+version=trunk
+man_prefix = /usr/local/www/www.zetadev.com/software/pytest/${version}/man
+
+
 configure: clean
 # create the script to be installed
 	cp bin/pytest.py pytest
@@ -17,11 +22,9 @@ configure: clean
 clean:
 # remove all of the cruft that gets auto-generated on doc/install/release
 	rm -rf pytest pytest.1.gz
-	rm -rf build
 	rm -rf doc/api
 	rm -rf doc/python.1.html
 	rm -rf dist
-	rm -rf MANIFEST
 
 install: configure
 # after deleting and recreating the script and man page, install them
@@ -37,24 +40,18 @@ uninstall:
 # note that the result of setup.py is not undone
 
 
-doc:
+docs:
 # auto-generate some docs
 	epydoc -o doc/api site-packages/PyTest site-packages/ASTutils
 	man -M ${man_prefix} pytest | rman -f HTML > doc/pytest.1.html
 
-
-
-
-# release parameters
-version=trunk
-man_prefix = /usr/local/www/www.zetadev.com/software/pytest/${version}/man
-
-release:clean doc
+release:clean docs
 # do a release; not using setup.py because sdist doesn't allow for Makefile, etc.
 
 # build a source distribution
 	mkdir -p pytest-${version}/doc
 	cp -r doc/tutorial.pyt pytest-${version}/doc
+	cp -r doc/api pytest-${version}/doc/api
 	cp -r bin pytest-${version}/
 	cp -r man pytest-${version}/
 	cp -r site-packages pytest-${version}/
