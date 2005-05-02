@@ -3,7 +3,6 @@ from distutils.core import setup
 
 classifiers = [
     'Development Status :: 4 - Beta'
-  # 'Development Status :: 5 - Production/Stable'
   , 'Environment :: Console'
   , 'Intended Audience :: Developers'
   , 'License :: Freeware'
@@ -16,7 +15,7 @@ classifiers = [
 setup( name = 'pytest'
      , version = '0.3'
      , package_dir = {'':'site-packages'}
-     , packages = ['ASTutils','pytest']
+     , packages = ['ASTutils','PyTest']
      , description = 'Pytest is a testing interpreter for Python.'
      , author = 'Chad Whitacre'
      , author_email = 'chad [at] zetaweb [dot] com'

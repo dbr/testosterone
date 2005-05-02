@@ -4,13 +4,12 @@
 
 prefix=/usr/local
 
-configure:
-# delete and recreate the script to be installed
-	rm -f pytest
+configure: clean
+# create the script to be installed
 	cp bin/pytest.py pytest
 	chmod 555 pytest
 
-# delete and recreate the man page to be installed
+# create the man page to be installed
 	rm -f pytest.1.gz
 	gzip -c -9 man/pytest.1 > pytest.1.gz
 	chmod 444 pytest.1.gz

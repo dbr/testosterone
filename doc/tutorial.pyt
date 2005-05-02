@@ -18,11 +18,11 @@
 #
 #   SECTION IV: THE REPORT                          LINE 190
 #
-#   SECTION V: EXCEPTION HANDLING                   LINE 310
+#   SECTION V: EXCEPTION HANDLING                   LINE 311
 #
-#   SECTION VI: USAGE PATTERNS                      LINE 394
+#   SECTION VI: USAGE PATTERNS                      LINE 395
 #
-#   SECTION VII: CONCLUSION                         LINE 418
+#   SECTION VII: CONCLUSION                         LINE 419
 
 
 
@@ -234,11 +234,12 @@ len(foo) > 1 # test
 +------------------------------------------------------------------------------+
 
 Traceback (most recent call last):
-  File "/home/whit537/pytest/PyTest.py", line 231, in intercept
+  File "/usr/local/lib/python2.4/site-packages/PyTest/Observer.py", line 68, in
+intercept
     if eval(statement, globals, locals):
   File "<string>", line 0, in ?
   File "<string>", line 66, in foo
-RuntimeError: ouch!
+Exception
 """
 
 # If you look closely you will notice that the whitespace in the statement:
@@ -319,13 +320,13 @@ print foo
 def foo():
     raise Exception
 
-foo() is True # look for the traceback in the report
+#foo() is True # look for the traceback in the report
 
 
 # Exceptions raised during print statements are also captured by pytest, tallied
 # under 'other exceptions,' and included in the report. Execution then proceeds:
 
-print foo()
+#print foo()
 
 
 # Fixture on the other hand, is run "as is," so exceptions raised by fixture are

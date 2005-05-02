@@ -1,32 +1,5 @@
 #!/usr/bin/env python
-"""Pytest is a testing interpreter for Python.
-
-Usage:
-
-    Pytest takes a single argument, which is a Unix filename pattern. Pytest
-    will take all files in the current directory that match the pattern, and
-    will run them through the main Python interpreter, monitoring their
-    execution. Afterwards it will give you a report showing summary information
-    and detailed information on any non-passing tests.
-
-
-Examples:
-
-    Test a single file, sending the report to your pager:
-
-        $ pytest tutorial.pyt | less
-
-    Test all files in the current directory with the .pyt extension:
-
-        $ pytest '*.pyt'
-
-    Remember to quote a pattern with special characters so that your shell does
-    not expand it before pytest has a chance to.
-
-
-For a detailed discussion of pytest, please see the file doc/tutorial.pyt
-included with the distribution.
-
+"""Pytest is a testing interpreter for Python; see man 1 pytest for details.
 """
 
 ##
@@ -48,7 +21,7 @@ __locals__  = locals()
 import fnmatch
 import os
 
-import pytest
+import PyTest
 
 ##
 # Set up some test runners.
@@ -63,12 +36,12 @@ def test_one(filename, report_buffer=None):
 
     """
 
-    heisenberg = pytest.Observer()
+    heisenberg = PyTest.Observer()
     heisenberg.start_timer()
 
     # read in the file to test and mix in our testing framework
     original = file(filename).read()
-    interpolated = pytest.Interpolator.interpolate(original)
+    interpolated = PyTest.Interpolator.interpolate(original)
 
     # set up the lab environment and run the test
     sys.modules = __modules__
