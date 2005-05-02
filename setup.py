@@ -8,7 +8,7 @@ classifiers = [
   , 'Intended Audience :: Developers'
   , 'License :: Freeware'
   , 'Natural Language :: English'
-  , 'Operating System :: OS Independent'
+  , 'Operating System :: Unix'
   , 'Programming Language :: Python'
   , 'Topic :: Software Development :: Testing'
                 ]
