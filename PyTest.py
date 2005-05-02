@@ -6,15 +6,20 @@ pytest interpreter:
     2. Observer -- runs the interpolated code and monitors its execution
     3. utils -- convenience methods useful inside of a pytest script
 
-For more information, see the pytest man page.
+For more information, see the pytest documentation.
 """
 
-__author__ = 'Chad Whitacre'
-__version__ = '0.3'
-
-import linecache, os, parser, symbol, sys, time, token, traceback
+import linecache
+import os
+import parser
+import symbol
+import sys
+import time
+import token
+import traceback
 from os import linesep
 from StringIO import StringIO
+
 from ASTutils import ASTutils
 
 class PyTestException(Exception):

@@ -378,10 +378,10 @@ exc is Exception # test
 # convenience method called 'catch_exc' for this. This is currently the only
 # method in PyTest.utils:
 
+from PyTest import utils
+
 def foo(bar, baz):
     raise Exception
-
-from PyTest import utils
 
 exc = utils.catch_exc(foo, 1, baz='bar')
 
