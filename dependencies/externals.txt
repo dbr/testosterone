@@ -1,1 +1,1 @@
-http://svn.zetadev.com/repos/public/ASTutils/tags/0.2.0/ ASTutils
+ASTutils http://svn.zetadev.com/repos/public/ASTutils/tags/0.2.0/
