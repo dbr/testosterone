@@ -31,7 +31,25 @@ class Interpolator:
     """
 
     def interpolate(self, block):
-        """return the original block with our interpolations
+        """Given a block of code, return the same code + our testing framework.
+
+        Our testing framework consists of calls to the Observer.intercept method
+        wrapped around all tests and print statements. Tests are any explicit
+        comparison statement, i.e., those with a comparison operator. The
+        Observer.run method adds the Observer instance to the test script's
+        namespace as __pytest__.
+
+        Example:
+
+            >>> block = "1 + 1 == 2"
+            >>> Interpolator.interpolate(block)
+            '__pytest__ . intercept ( "1 + 1 == 2" , 1 , globals ( ) , locals ( ) , COMPARING = True , PRINTING = False )'
+
+            >>> block = "print 'hello world'"
+            >>> Interpolator.interpolate(block)
+            '__pytest__ . intercept ( "print \\\\\\'hello world\\\\\\'" , 1 , globals ( ) , locals ( ) , COMPARING = False , PRINTING = True )'
+
+
         """
         self.cst = parser.suite(block).tolist(line_info=True)
         self._walk(self.cst)
