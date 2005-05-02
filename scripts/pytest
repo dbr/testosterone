@@ -17,7 +17,7 @@ Examples:
     $ pytest '*.pyt'
 
 
-For a detailed discussion of pyt files, please see the file doc/tutorial.pyt
+For a detailed discussion of pytest, please see the file doc/tutorial.pyt
 included with the distribution.
 
 """
