@@ -44,6 +44,7 @@ def test_one(filename, report_buffer=None):
     interpolated = PyTest.Interpolator.interpolate(original)
 
     # set up the lab environment and run the test
+    sys.path[0] = os.curdir
     sys.modules = __modules__
     __globals__['__pytest__'] = sys.stdout = heisenberg
     heisenberg.run(filename, interpolated, __globals__, __locals__)
@@ -126,7 +127,7 @@ if __name__ == '__main__':
     ##
 
     if len(filenames) == 0:
-        print 'filename pattern did not match any files in the current directory'
+        print '<%s> did not match any files in the current directory' % fnpattern
         sys.exit(0)
     elif len(filenames) > 1:
         test_all(filenames)

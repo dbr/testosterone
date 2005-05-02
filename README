@@ -1,13 +1,20 @@
 Pytest is a testing interpreter for Python.
 
+
 ========================================
     INSTALLATION
 ========================================
 
+Here's how to install pytest and verify that it works:
+
     $ cd ~
-    $ fetch http://www.zetadev.com/software/pytest/latest/dist/pytest-0.3.tar.gz
-    $ tar zxf pytest-0.3.tar.gz
-    $ cd pytest-0.3
+    $ fetch http://www.zetadev.com/software/pytest/trunk/dist/pytest-trunk.tar.gz
+    $ tar zxf pytest-trunk.tar.gz
+    $ cd pytest-trunk
+    $ sudo make install
+    $ cd doc
+    $ pytest tutorial.pyt
+    ... # should see report output
 
 
 ========================================
