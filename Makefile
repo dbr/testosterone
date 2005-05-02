@@ -69,7 +69,8 @@ release:clean docs
 	cp -r bin pytest-${version}/
 	cp -r man pytest-${version}/
 	cp -r site-packages pytest-${version}/
-	cp README Makefile setup.py pytest-${version}/
+	cp README setup.py pytest-${version}/
+	cp Makefile-release pytest-${version}/Makefile
 
 # tar it up
 	mkdir dist
