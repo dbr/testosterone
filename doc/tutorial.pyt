@@ -230,7 +230,7 @@ len(foo) > 1 # test
 # exceptions). For example, here is an exception:
 """
 +------------------------------------------------------------------------------+
-| EXCEPTION                     foo ( ) is True                     LINE:  322 |
+| EXCEPTION                     foo ( ) is True                     LINE:  323 |
 +------------------------------------------------------------------------------+
 
 Traceback (most recent call last):
@@ -320,13 +320,13 @@ print foo
 def foo():
     raise Exception
 
-#foo() is True # look for the traceback in the report
+foo() is True # look for the traceback in the report
 
 
 # Exceptions raised during print statements are also captured by pytest, tallied
 # under 'other exceptions,' and included in the report. Execution then proceeds:
 
-#print foo()
+print foo()
 
 
 # Fixture on the other hand, is run "as is," so exceptions raised by fixture are
