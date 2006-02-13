@@ -60,6 +60,8 @@ def stat(base, run=True, recursive=True, stopwords=()):
     if recursive:
         path = os.path.dirname(module.__file__)
         for name in sorted(sys.modules):
+            if name == modules[0].__name__:
+                continue
             stop = False
             for word in stopwords:
                 if word in name:
@@ -80,24 +82,50 @@ def stat(base, run=True, recursive=True, stopwords=()):
     # Write our output.
     # =================
 
+    print "module".ljust(60), "pass", "fail", " err", " all"
+    print "=" * 80
+
+    tpass5 = tfail = terr = tall = '-'
     if run:
-        runner = unittest.TextTestRunner(StringIO())
+        tfail = terr = tall = 0
+        runner = unittest.TextTestRunner(StringIO()) # swallow unittest output
     for module in modules:
         suite = flatten(unittest.defaultTestLoader.loadTestsFromModule(module))
         pass5 = fail = err = '-'
         all = suite.countTestCases()
         if run:
-            if all == 0:
-                fail = err = 0
-                pass5 = 100
-            else:
+            if all != 0:
                 result = runner.run(suite)
                 fail = len(result.failures)
                 err = len(result.errors)
-                pass5 =  int(round(((all - fail - err) / all)))
-        print module.__name__, pass5, fail, err, all
+                pass5 = (all - fail - err) / float(all)
+                pass5 =  int(round(pass5*100))
+                tfail += fail
+                terr += err
+                tall += all
+        name = module.__name__.ljust(60)
+        if pass5 == '-':
+            pass5 = '  - '
+        else:
+            pass5 = str(pass5).rjust(3)+'%'
+        fail = str(fail).rjust(4)
+        err = str(err).rjust(4)
+        all = str(all).rjust(4)
 
+        print name, pass5, fail, err, all
 
+    if tall:
+        tpass5 = (tall - tfail - terr) / float(tall)
+        tpass5 =  int(round(tpass5*100))
+    if tpass5 == '-':
+        tpass5 = '  - '
+    else:
+        tpass5 = str(tpass5).rjust(3)+'%'
+    tfail = str(tfail).rjust(4)
+    terr = str(terr).rjust(4)
+    tall = str(tall).rjust(4)
+    print "=" * 80
+    print "TOTALS".ljust(60), tpass5, tfail, terr, tall
 
 # Main function a la Guido.
 # =========================
