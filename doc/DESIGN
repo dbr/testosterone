@@ -1,35 +1,51 @@
-changes
-    module hierarchy -- manually restart testosterone
-    module contents -- should be picked up automatically
-    tests --
+"""
+cli
+    -n  run tests
+    -N  don't run tests, just find them
+    -r  recursive;
+    -R  non-recursive; default
+    -i  interactive; default on Unix, not available on Windows
+    -I  non-interactive; default on Windows
+
+curses
+    screen drawing
+    UI event handling
+    ConsoleScreen
+"""
+
+
+
+
 
 
 ModulesScreen
 =============
 
+$ testosterone -Nr httpy.couplers
+
 +------------------------------<| testosterone |>------------------------------+
-¦  MODULES                                             ¦  TESTS [CUMULATIVE]   ¦
+¦  MODULE: httpy                                       ¦         TESTS         ¦
 +------------------------------------------------------+-----------------------+
-¦                                                      ¦ pass  fail  err  all  ¦
+¦  MODULES                                             ¦ pass  fail  err  all  ¦
 +------------------------------------------------------+-----------------------+
-¦> httpy                                               ¦   -      -    -    9 <¦
-¦·   couplers                                          ¦  50%     1    2    6 ·¦
-¦·     standalone                                      ¦  50%     1    2    6 ·¦
-¦·       task                                          ¦  50%     1    2    6 ·¦
-¦·   request                                           ¦   -      -    -    2 ·¦
-¦·   responders                                        ¦   -      -    -    1 ·¦
-¦·     static                                          ¦   -      -    -    1 ·¦
+¦  httpy                                               ¦   -      -    -    0  ¦
+¦    couplers                                          ¦   -      -    -    0  ¦
+¦>     standalone                                      ¦  17%     2    3    8 <¦
+¦·       task                                          ¦   0%     1    1    2 ·¦
+¦    request                                           ¦   -      -    -    2  ¦
+¦    responders                                        ¦   -      -    -    0  ¦
+¦      static                                          ¦   -      -    -    1  ¦
 ¦                                                      ¦                       ¦
 ¦                                                      ¦                       ¦
 ¦                                                      ¦                       ¦
-¦                                                      ¦                       ¦
-¦                                                      ¦                       ¦
++------------------------------------------------------+-----------------------+
+¦                                               TOTALS ¦  56%     3    4   11  ¦
 +------------------------------------------------------------------------------+
 ¦  ran 6 tests in 0.322 seconds                                                ¦
 +------------------------------------------------------------------------------+
 
 UI-driven events
-    F5          run selected tests per the current scope (flat/cumulative)
+    F5          run selected tests
     space       toggle flat/cumulative
     enter       refresh state for single module and go to ResultsScreen
                     shouldn't go to results screen if all tests pass
@@ -41,6 +57,9 @@ other events
 
 ResultsScreen
 =============
+
+$ testosterone httpy.couplers.standalone
+$ testosterone httpy.couplers.standalone
 
 +-----------------------------<| testosterone |>-------------------------------+
 ¦  MODULE: httpy.couplers.standalone                                           ¦
@@ -66,8 +85,8 @@ other events
 
 UI-driven events
     esc     return to ModulesScreen
-    F5      run all tests for current module
-    enter   run single test
+    F5      run currently selected test
+    ctrl-F5 run all tests for current module
     tab     toggle focus between TESTS and TRACEBACK panes
                 TRACEBACK pane should scroll up/down/left/right with arrow keys
 
@@ -76,6 +95,8 @@ other events
 
 ConsoleScreen
 =============
+
+$ testosterone httpy.couplers.standalone [breakpoint set]
 
 +-----------------------------<| testosterone |>-------------------------------+
 ¦  MODULE: httpy.couplers.standalone                                           ¦
@@ -111,6 +132,7 @@ other events
 ===future===
 ctrl-tab    mode for resizing panes
 autoreact to changes in module hierarchy
+syntax highlighting in ConsoleScreen
 ModulesScreen
     ctrl-F5     reload tests, resetting state
     ctrl-space  toggle all/non-passing
