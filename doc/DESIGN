@@ -1,0 +1,117 @@
+changes
+    module hierarchy -- manually restart testosterone
+    module contents -- should be picked up automatically
+    tests --
+
+
+ModulesScreen
+=============
+
++------------------------------<| testosterone |>------------------------------+
+¦  MODULES                                             ¦  TESTS [CUMULATIVE]   ¦
++------------------------------------------------------+-----------------------+
+¦                                                      ¦ pass  fail  err  all  ¦
++------------------------------------------------------+-----------------------+
+¦> httpy                                               ¦   -      -    -    9 <¦
+¦·   couplers                                          ¦  50%     1    2    6 ·¦
+¦·     standalone                                      ¦  50%     1    2    6 ·¦
+¦·       task                                          ¦  50%     1    2    6 ·¦
+¦·   request                                           ¦   -      -    -    2 ·¦
+¦·   responders                                        ¦   -      -    -    1 ·¦
+¦·     static                                          ¦   -      -    -    1 ·¦
+¦                                                      ¦                       ¦
+¦                                                      ¦                       ¦
+¦                                                      ¦                       ¦
+¦                                                      ¦                       ¦
+¦                                                      ¦                       ¦
++------------------------------------------------------------------------------+
+¦  ran 6 tests in 0.322 seconds                                                ¦
++------------------------------------------------------------------------------+
+
+UI-driven events
+    F5          run selected tests per the current scope (flat/cumulative)
+    space       toggle flat/cumulative
+    enter       refresh state for single module and go to ResultsScreen
+                    shouldn't go to results screen if all tests pass
+
+other events
+    message area should clear any message after 3 seconds
+
+
+
+ResultsScreen
+=============
+
++-----------------------------<| testosterone |>-------------------------------+
+¦  MODULE: httpy.couplers.standalone                                           ¦
++------------------------------------------------------------------------------+
+¦  TESTS (total: 9999; passing: 100%)  ¦ TRACEBACK                             ¦
++------------------------------------------------------------------------------+
+¦> failures (2)                       <¦ Traceback (most recent call last):    ¦
+¦    testFooBar                        ¦   File "<stdin>", line 1, in ?        ¦
+¦    testReallyReallyReallyLongNam...  ¦ heck                                  ¦
+¦  errors (3)                          ¦                                       ¦
+¦    testFooBarm                       ¦                                       ¦
+¦    testBazBuz                        ¦                                       ¦
+¦    testBlam                          ¦                                       ¦
+¦                                      ¦                                       ¦
+¦                                      ¦                                       ¦
+¦                                      ¦                                       ¦
+¦                                      ¦                                       ¦
+¦                                      ¦                                       ¦
+¦                                      ¦                                       ¦
++------------------------------------------------------------------------------+
+¦  testFooBlim passed!                                                         ¦
++------------------------------------------------------------------------------+
+
+UI-driven events
+    esc     return to ModulesScreen
+    F5      run all tests for current module
+    enter   run single test
+    tab     toggle focus between TESTS and TRACEBACK panes
+                TRACEBACK pane should scroll up/down/left/right with arrow keys
+
+other events
+
+
+ConsoleScreen
+=============
+
++-----------------------------<| testosterone |>-------------------------------+
+¦  MODULE: httpy.couplers.standalone                                           ¦
++------------------------------------------------------------------------------+
+¦  TEST: testFooBar                                                            ¦
++------------------------------------------------------------------------------+
+Traceback (most recent call last):
+  File "<stdin>", line 1, in ?
+heck
+(pdb)
+
+
+
+
+
+
+
+
+
+
+
+
++------------------------------------------------------------------------------+
+
+UI-driven events
+    ctrl-D  return to ResultsScreen
+
+other events
+    module changes
+    test changes
+
+
+===future===
+ctrl-tab    mode for resizing panes
+autoreact to changes in module hierarchy
+ModulesScreen
+    ctrl-F5     reload tests, resetting state
+    ctrl-space  toggle all/non-passing
+ResultsScreen
