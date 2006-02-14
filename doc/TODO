@@ -1,62 +1,21 @@
-========================================
-    BUGS
-========================================
+ModulesScreen
+    feedback while loading/updating
+        spinning wheel is the easy out
+        better is progress bar, but that means progressive communication with "server"
+    need to be smarter about which tests to show
+        don't show modules for which all tests pass
+        don't show modules for which there are no test
+        unless a submodule of that module has tests
+    highlight current selection better
+    distinguish fresh, stale, and un-run tests
+    really should have pgup/pgdn/home/end
+    ooh! delete removes module from testing list until next reload?
+    need to display totals
+ResultsScreen
+ConsoleScreen
 
-account for multiple small statements -- (need to make promote_node arbitrary?)
-if there are tests inside of a loop that is itself called from a test, the output is sandwiched (rewrite for curses will solve this)
-on CRISIS, output gets written to report twice
-if no output, only show one summary
-breaks with ZopeTestCase
+
+
 =====DONE=====
-line up time elapsed
-in wrap function, specify string with syntax tree manipulations instead of literal string delimiters
-None at end of output?
-sys.path[0] needs to be file's sys.path[0], not /usr/local/bin/
-
-
-
-
-
-========================================
-    FEATURES
-========================================
-
-release it
-    fix a few more bugs
-    =====DONE=====
-    epydoc -> docs.zetadev.com
-    package w/ distutils
-    www.zetadev.com/releases/
-=====DONE=====
-figure out how we want to package it
-    SCRIPTS
-    but man page needs Makefile?
-write man page
-clean up cli
-    test*.py accept filename patterns
-write tests for ASTutils and pytest
-write tutorial
-clean up output formatting
-    same header top and bottom, w/ results
-    line numbers
-    h3 for FAILUREs (need to execute all terms of each test and capture the output)
-set up software.zetweb.com & svn.zetaweb.com (!)
-
-
-future
-----------------------------------------
-utils.reset -- re-sanitize the testing context (globals, locals, modules)
-smarter output catching -- pprint, sys.stdout.write(?) -- extend .write()?
-clean up cli
-    -a = *.pyt
-    -r recursive
-    -1 stop after first output (failure, output, exception)
-traceback shows eval context, not actual script context: is it meaningful/useful?
-modify to run old PyUnit tests as well? (should just be able to intercept assert* and convert to regular test)
-curses app! index of detailed reports, enter index number to see detail; F5 to refresh :-)
-verbose mode; curses app would need to show detailed reports for passed tests as well
-document usage with non-standard python installations
-    afaict this works: ~/bin/my-python /usr/local/bin/pytest tutorial.pyt
-    you can also copy /usr/local/bin/pytest to /usr/local/bin/mytest and change the hashbang line
-run ast2text against the standard library unit tests
-register with PyPI?
+ModuleScreen
+    scroll off bottom of screen is buggy

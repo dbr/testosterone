@@ -6,6 +6,7 @@ import getopt
 import os
 import subprocess
 import sys
+import traceback
 import unittest
 from StringIO import StringIO
 
@@ -20,6 +21,7 @@ __version__ = "0.4"
 C = '-'
 BANNER = C*31 + "<| testosterone |>" + C*31
 BORDER = C * 80
+HEADERS = ' '.join(["MODULE".ljust(60), "PASS", "FAIL", " ERR", " ALL"])
 WINDOWS = 'win' in sys.platform
 
 class dev_null:
@@ -97,8 +99,8 @@ def summarize(base, quiet=True, recursive=True, run=True, stopwords=()):
     If quiet is True (the default), then modules with no tests are not listed in
     the output; if False, they are. If recursive is False, then only the module
     explicitly named will be touched. If it is True (the default), then all
-    sub-modules will also be included in the output, unless their name contains
-    a stopword. If run is False, then no statistics on passes, failures, and
+    submodules will also be included in the output, unless their name contains a
+    stopword. If run is False, then no statistics on passes, failures, and
     errors will be available, and the output for each will be a dash character
     ('-'). run defaults to True.
 
@@ -122,7 +124,7 @@ def summarize(base, quiet=True, recursive=True, run=True, stopwords=()):
                 continue
             stop = False
             for word in stopwords:
-                if word in name:
+                if word and word in name:
                     stop = True
             if stop:
                 continue
@@ -146,8 +148,8 @@ def summarize(base, quiet=True, recursive=True, run=True, stopwords=()):
 
     # Header
     print >> out, BANNER
-    print >> out, "MODULE".ljust(60), "PASS", "FAIL", " ERR", " ALL"
-    print >> out, BANNER
+    print >> out, HEADERS
+    print >> out, BORDER
 
     # Data
     tpass5 = tfail = terr = tall = '-'
@@ -210,12 +212,373 @@ def summarize(base, quiet=True, recursive=True, run=True, stopwords=()):
     # Output our report.
     # ==================
 
-    print out.getvalue()
+    sys.stdout.write(out.getvalue())
+
+
+
+
+# Inter-process communicators.
+# ============================
+
+class Summary:
+    """Represent the data from an inter-process summarize() call.
+    """
+
+    data = {}   # a dictionary, {name: 4-tuple}
+    total = []  # a single 4-tuple
+    names = []  # a list of modules names in data
+
+    def __init__(self, stopwords=()):
+        """Takes a dotted name, a list, and two booleans.
+        """
+        self.stopwords = stopwords
+        self.data = {}
+        self.total = []
+
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def __len__(self):
+        return self.data.__len__()
+
+    def __iter__(self):
+        return self.data.__iter__()
+    iterkeys = __iter__
+
+
+    def refresh(self, base, run=False):
+        """Update our information.
+        """
+        call = ( sys.executable
+               , sys.argv[0]
+               , '--stopwords=%s' % ','.join(self.stopwords)
+               , run and '--run' or '--find'
+               , '--scripted'
+               , '--summary'
+               , '--verbose' # always verbose; deal with empties higher up
+               , base
+                )
+        #open('log', 'a+').write(' '.join(call)+'\n')
+        proc = subprocess.Popen(call, stdout=subprocess.PIPE)
+        lines = proc.stdout.read().splitlines()
+        self.total = lines[-1].split()[1:]
+        del lines[-1]
+        start = False
+        for line in lines:
+            line = line.strip('\n')
+            if line == BANNER:
+                start = True
+                continue
+            if (not start) or (not line) or line in (HEADERS, BORDER):
+                continue
+            tokens = line.split()
+            self.data[tokens[0]] = tokens[1:]
+        self.names = sorted(self.data)
+
+
+if '--foo' in sys.argv:
+    foo = Summary(('_zope','jon'))
+    foo.refresh('httpy')
+    import pdb; pdb.set_trace()
+    raise SystemExit
 
 
 
 # Interactive interface
 # =====================
+
+class CursesInterface:
+
+    def __init__(self, base, stopwords):
+        self.base = base
+        self.stopwords = stopwords
+        curses.wrapper(self.wrapme)
+        os.system('clear')
+
+    def wrapme(self, win):
+        self.win = win
+        curses.curs_set(0) # Don't show the cursor.
+        screen = ModulesScreen(self)
+        try:
+            while 1:
+                # Each screen returns the next screen.
+                screen = screen.go()
+        except KeyboardInterrupt:
+            pass
+
+
+class ModulesScreen:
+    """Represents the main module listing.
+
+    UI-driven events:
+
+        F5 -- refresh list of modules, resetting tests to un-run
+        space -- run tests for selected module and submodules
+        enter -- run selection
+
+    """
+
+    H = W = 0       # the dimensions of the window
+    selected = ''   # the dotted name of the currently selected item
+    start = end = 0 # the current index positions in summary
+    summary = {}    # a data dictionary per summarize()
+    toprows = 3     # the number of boilerplate rows at the top
+    viewrow = 0     # the current row selected in the viewport
+    viewrows = 0    # the number of rows in the viewport
+    win = None      # a curses window
+
+
+    def __init__(self, iface):
+        """Takes a CursesInterface object.
+        """
+        self.win = iface.win
+        self.base = iface.base
+        self.stopwords = iface.stopwords
+        self.load()
+        self.selected = self.summary.names[self.start]
+
+    def load(self):
+        self.summary = Summary(self.stopwords)
+        self.summary.refresh(self.base, run=False)
+
+    def get_size(self):
+        """getmaxyx is 1-indexed, but just about everything else is 0-indexed.
+        """
+        return tuple([i-1 for i in self.win.getmaxyx()])
+
+    def go(self):
+        """Interact with the user, return the next screen.
+        """
+
+        while 1:
+
+            # Draw the screen.
+            # ================
+            # But first make sure the terminal is big enough.
+
+            if (self.H, self.W) != self.get_size():
+                self.win.clear()
+                self.win.refresh()
+                self.H, self.W = self.get_size()
+                if (self.H < 4) or (self.W < 34):
+                    msg = "Terminal too small."
+                    if (self.H == 0) or (self.W < len(msg)):
+                        continue
+                    self.win.addstr(self.H/2,(self.W-len(msg))/2,msg)
+                    self.win.refresh()
+                    continue
+            self.draw()
+
+
+            # Trap a key.
+            # ===========
+
+            c = self.win.getch()
+
+            if c == ord('q'):
+                raise KeyboardInterrupt
+
+            elif c == ord('h'):
+                pass # return HelpScreen(self.iface)
+
+            elif c == curses.KEY_UP:
+                if self.viewrow == 0:
+                    if self.start == 0:
+                        curses.beep()
+                        continue
+                    self.start -= 1
+                    self.draw_list()
+                    continue
+                self.viewrow -= 1
+                self.draw_list()
+
+            elif c == curses.KEY_DOWN:
+                numrows = len(self.summary)
+                if self.viewrow == self.viewrows:
+                    if (self.start+self.viewrows) == numrows-1:
+                        curses.beep()
+                        continue
+                    self.start += 1
+                    self.draw_list()
+                    continue
+                if self.viewrow == numrows:
+                    curses.beep()
+                    continue
+                self.viewrow += 1
+                self.draw_list()
+
+            elif c == curses.KEY_F5:
+                self.load()
+                self.draw_list()
+
+            elif c == ord(' '):
+                self.summary.refresh(self.selected, run=True)
+                self.draw_list()
+
+
+    def draw(self):
+        """Draw the screen.
+        """
+
+        # Get window dimensions; account for border.
+        # ==========================================
+
+        H,W = self.H,self.W
+        c1h = c2h = H - self.toprows
+        c2w = 20
+        c1w = W - c2w - 7
+        self.c1 = (c1h, c1w)
+        self.c2 = (c2h, c2w)
+
+
+        # Background, border, scrollbar
+        # =============================
+
+        self.win.bkgd(' ')
+        self.win.border()
+
+        # headers bottom border
+        self.win.addch(2,0,curses.ACS_LTEE)
+        for i in range(0,W-1):
+            self.win.addch(2,i+1,curses.ACS_HLINE)
+        self.win.addch(2,W,curses.ACS_RTEE)
+
+        # column border
+        self.win.addch(0,(W-c2w-3),curses.ACS_TTEE)
+        self.win.vline(1,(W-c2w-3),curses.ACS_VLINE,H-1)
+        self.win.addch(2,(W-c2w-3),curses.ACS_PLUS)
+        self.win.addch(H,(W-c2w-3),curses.ACS_BTEE)
+
+
+        # Banner text and column headers
+        # ==============================
+
+        banner = " testosterone "
+        l = (W - len(banner)) / 2
+        r = l + len(banner)
+        self.win.addch(0,l-2,curses.ACS_LARROW)
+        self.win.addch(0,l-1,curses.ACS_VLINE)
+        self.win.addstr(0,l,banner)
+        self.win.addch(0,r,curses.ACS_VLINE)
+        self.win.addch(0,r+1,curses.ACS_RARROW)
+
+        self.win.addstr(1,3,"MODULES")
+        self.win.addstr(1,self.W-c2w-1,"PASS")
+        self.win.addstr(1,self.W-c2w-1+5,"FAIL")
+        self.win.addstr(1,self.W-c2w-1+10," ERR")
+        self.win.addstr(1,self.W-c2w-1+15," ALL")
+
+
+        # Module listing
+        # ==============
+        # This calls self.win.refresh()
+
+        self.draw_list()
+
+
+
+    def draw_list(self):
+        """Draw the list of modules.
+        """
+
+        c1h, c1w = self.c1
+        c2h, c2w = self.c2
+
+        self.viewrows = c1h-1
+        self.end = self.start + self.viewrows + 1
+
+
+        # Current selection
+        # =================
+        # Eventually I would maybe like to see this go in a message area at
+        # the bottom.
+
+        self.selected = self.summary.names[self.start+self.viewrow]
+        #selected = self.selected
+        #if len(self.selected) > self.W-17:
+        #    selected = self.selected[:self.W-20]+'...'
+        #self.win.addstr(1,13,selected.ljust(self.W-17))
+
+
+        i = self.toprows
+        prefix = '' # signal for submodule bullets
+
+        for name in self.summary.names[self.start:self.end]:
+
+            # Short name
+            # ==========
+
+            parts = name.split('.')
+            shortname = ('  '*(len(parts)-1)) + parts[-1]
+            if len(shortname) > c1w:
+                shortname = shortname[:c1w-3] + '...'
+            shortname = shortname.ljust(c1w)
+            self.win.addstr(i,3,shortname)
+
+
+            # Bullet(s)
+            # =========
+
+            l = ' '
+            r = ' '
+            if i == self.viewrow + self.toprows:
+                if not prefix:
+                    prefix = name
+                l = curses.ACS_RARROW
+                r = curses.ACS_LARROW
+            elif prefix and name.startswith(prefix):
+                l = r = curses.ACS_BULLET
+            self.win.addch(i,1,l)
+            self.win.addch(i,self.W-1,r)
+
+
+            # Data
+            # ====
+
+            try:
+                pass5, fail, err, all = self.summary[name]
+            except:
+                raise StandardError(self.summary[name])
+            if pass5 == '-':
+                pass5 = '- '
+            if len(fail) > 4:
+                fail = '9999'
+            if len(err) > 4:
+                err = '9999'
+            if len(all) > 4:
+                all = '9999'
+            self.win.addstr(i,self.W-c2w-1,pass5.rjust(4))
+            self.win.addstr(i,self.W-c2w-1+5,err.rjust(4))
+            self.win.addstr(i,self.W-c2w-1+10,fail.rjust(4))
+            self.win.addstr(i,self.W-c2w-1+15,all.rjust(4))
+
+            i += 1
+            if i > self.viewrows + self.toprows:
+                break
+
+
+        # Continuation indicators
+        # =======================
+
+        if self.start > 0:
+            c = curses.ACS_UARROW
+        else:
+            c = curses.ACS_HLINE
+        self.win.addch(2,1,c)
+        self.win.addch(2,self.W-1,c)
+
+        if self.end < len(self.summary):
+            c = curses.ACS_LANTERN
+        else:
+            c = curses.ACS_HLINE
+        self.win.addch(self.H,1,c)
+        self.win.addch(self.H,self.W-1,c)
+
+
+        # Finally, draw the window.
+        # =========================
+
+        self.win.refresh()
 
 
 
@@ -233,24 +596,24 @@ def main(argv=None):
         argv = sys.argv
     try:
         try:
-            short = "g:iInNqQrRsS"
-            long_ = [ "ignore="
-                    , "interactive","scripted"
+            short = "iInNqQrRsSx:"
+            long_ = [ "interactive","scripted"
                     , "run","find"
-                    , "recursive","flat"
                     , "quiet","verbose"
+                    , "recursive","flat"
                     , "summary","detail"
+                    , "stopwords="
                      ]
             opts, args = getopt.getopt(argv[1:], short, long_)
         except getopt.error, msg:
             raise Usage(msg)
 
-        stopwords = []      # -g
         interactive = True  # -i
         run = True          # -n
         quiet = True        # -q
         recursive = True    # -r
         summary = True      # -s
+        stopwords = []      # -x
 
         for opt, value in opts:
             if opt in ('-I', '--scripted'):
@@ -263,7 +626,7 @@ def main(argv=None):
                 recursive = False
             elif opt in ('-S', '--detail'):
                 summary = False
-            elif opt in ('-g', '--ignore'):
+            elif opt in ('-x', '--stopwords'):
                 stopwords = value.split(',')
 
         if not args:
@@ -274,9 +637,9 @@ def main(argv=None):
             if summary:
                 summarize(base, quiet, recursive, run, stopwords)
             else:
-                detail(base)
+                detail(base, stopwords)
         else:
-            CursesInterface(base)
+            CursesInterface(base, stopwords)
 
     except Usage, err:
         print >> sys.stderr, err.msg
