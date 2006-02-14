@@ -10,11 +10,21 @@ import unittest
 from StringIO import StringIO
 
 
+__all__ = ('run', 'summarize')
+
+
 WINDOWS = 'win' in sys.platform
 
 
-# Basic API
-# =========
+# Helpers
+# =======
+
+class dev_null:
+    """Output buffer that swallows everything.
+    """
+    def write(self, wheeeee):
+        pass
+
 
 def flatten(_suite):
     """Given a TestSuite, return a flattened TestSuite.
@@ -28,19 +38,67 @@ def flatten(_suite):
     return suite
 
 
-def stat(base, run=True, recursive=True, stopwords=()):
+# Basic API
+# =========
+
+def run(name_dotted):
+    """Given a module dotted name, run that module's tests.
+    """
+
+    # Get a TestSuite.
+    # ================
+
+    module = __import__(name_dotted)
+    for name in name_dotted.split('.')[1:]:
+        module = getattr(module, name)
+    suite = flatten(unittest.defaultTestLoader.loadTestsFromModule(module))
+
+
+    # Run tests.
+    # ==========
+    # We want the test results on standard out, but not any of the program's
+    # output.
+
+    sys.stdout = dev_null()
+    testout = StringIO()
+    runner = unittest.TextTestRunner(testout)
+    result = runner.run(suite)
+    sys.stdout = sys.__stdout__
+    print testout.getvalue()
+
+    return (not result.wasSuccessful())
+
+
+def summarize(base, quiet=True, recursive=True, run=True, stopwords=()):
     """Given a dotted module name, print statistics about its tests.
 
     The format of this function's output is:
 
+        -------------<| testosterone |>-------------
+        <header row>
+        --------------------------------------------
         <name> <passing> <failures> <errors> <total>
+        --------------------------------------------
+        TOTALS <passing> <failures> <errors> <total>
 
-    <passing> is given as a percentage; the other three are given in absolute
-    terms. If run is False, then no statistics on passes, failures, and errors
-    will be available, and the output for each will be a dash character ('-').
-    run defaults to True. If recursive is False, then only the module explicitly
-    named will be touched. If it is True (the default), then all sub-modules
-    will also be included in the output, unless their name contains a stopword.
+    Boilerplate rows are actually 80 characters long, though. <passing> is given
+    as a percentage (with a terminating percent sign); the other three are given
+    in absolute terms. Data rows will be longer than 80 characters iff the field
+    values exceed the following character lengths:
+
+        name        60
+        failures     4
+        errors       4
+        total        4
+
+    If quiet is True (the default), then modules with no tests are not listed in
+    the output; if False, they are. If recursive is False, then only the module
+    explicitly named will be touched. If it is True (the default), then all
+    sub-modules will also be included in the output, unless their name contains
+    a stopword. If run is False, then no statistics on passes, failures, and
+    errors will be available, and the output for each will be a dash character
+    ('-'). run defaults to True.
+
 
     """
 
@@ -82,18 +140,27 @@ def stat(base, run=True, recursive=True, stopwords=()):
     # Write our output.
     # =================
 
-    print "module".ljust(60), "pass", "fail", " err", " all"
-    print "=" * 80
 
+    # Header
+    c = '-'
+    print c*31 + "<| testosterone |>" + c*31
+    print "MODULE".ljust(60), "PASS", "FAIL", " ERR", " ALL"
+    print c * 80
+
+    # Data
     tpass5 = tfail = terr = tall = '-'
+    tall = 0
     if run:
         tfail = terr = tall = 0
-        runner = unittest.TextTestRunner(StringIO()) # swallow unittest output
+        runner = unittest.TextTestRunner(dev_null()) # swallow unittest output
     for module in modules:
         suite = flatten(unittest.defaultTestLoader.loadTestsFromModule(module))
         pass5 = fail = err = '-'
         all = suite.countTestCases()
-        if run:
+        tall += all
+        if not run:
+            yes = True
+        else:
             if all != 0:
                 result = runner.run(suite)
                 fail = len(result.failures)
@@ -102,21 +169,31 @@ def stat(base, run=True, recursive=True, stopwords=()):
                 pass5 =  int(round(pass5*100))
                 tfail += fail
                 terr += err
-                tall += all
+
+            has_result = (fail not in ('-', 0)) or (err not in ('-', 0))
+            yes = (not quiet) or has_result
+
         name = module.__name__.ljust(60)
         if pass5 == '-':
             pass5 = '  - '
         else:
             pass5 = str(pass5).rjust(3)+'%'
+
         fail = str(fail).rjust(4)
         err = str(err).rjust(4)
         all = str(all).rjust(4)
 
-        print name, pass5, fail, err, all
+        if yes:
+            print name, pass5, fail, err, all
 
+    # Footer
     if tall:
-        tpass5 = (tall - tfail - terr) / float(tall)
-        tpass5 =  int(round(tpass5*100))
+        if '-' not in (tfail, terr):
+            tpass5 = (tall - tfail - terr) / float(tall)
+            tpass5 =  int(round(tpass5*100))
+    else:
+        tfail = '-'
+        terr = '-'
     if tpass5 == '-':
         tpass5 = '  - '
     else:
@@ -124,8 +201,11 @@ def stat(base, run=True, recursive=True, stopwords=()):
     tfail = str(tfail).rjust(4)
     terr = str(terr).rjust(4)
     tall = str(tall).rjust(4)
-    print "=" * 80
-    print "TOTALS".ljust(60), tpass5, tfail, terr, tall
+    print c * 80
+    print "TOTAL".ljust(60), tpass5, tfail, terr, tall
+
+
+
 
 # Main function a la Guido.
 # =========================
@@ -141,45 +221,54 @@ def main(argv=None):
         argv = sys.argv
     try:
         try:
-            short = "iInNrRg:"
-            long_ = [ "interactive","scripted"
+            short = "g:iInNqQrRsS"
+            long_ = [ "ignore="
+                    , "interactive","scripted"
                     , "run","find"
                     , "recursive","flat"
-                    , "ignore="
+                    , "quiet","verbose"
+                    , "summary","detail"
                      ]
             opts, args = getopt.getopt(argv[1:], short, long_)
         except getopt.error, msg:
             raise Usage(msg)
 
-
+        stopwords = []      # -g
         interactive = True  # -i
-        run = True          # -n
-        recursive = True      # -r
-
-        stopwords = []
+        run_ = True          # -n
+        quiet = True        # -q
+        recursive = True    # -r
+        summary = True     # -s
 
         for opt, value in opts:
             if opt in ('-I', '--scripted'):
                 interactive = False
             elif opt in ('-N', '--find'):
-                find = False
+                run_ = False
+            elif opt in ('-Q', '--verbose'):
+                quiet = False
             elif opt in ('-R', '--flat'):
                 recursive = False
+            elif opt in ('-S', '--detail'):
+                summary = False
             elif opt in ('-g', '--ignore'):
                 stopwords = value.split(',')
 
         if not args:
-            raise Usage("No module named.")
+            raise Usage("No module specified.")
         base = args[0]
 
         if WINDOWS or not interactive:
-            stat(base, run, recursive, stopwords)
+            if summary:
+                summarize(base, quiet, recursive, run_, stopwords)
+            else:
+                run(base)
         else:
             CursesInterface(base)
 
     except Usage, err:
         print >> sys.stderr, err.msg
-        print >> sys.stderr, __doc__
+        print >> sys.stderr, "'man 1 testosterone' for instructions."
         return 2
 
 
