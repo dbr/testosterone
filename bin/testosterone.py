@@ -236,9 +236,11 @@ class Summary:
     """Represent the data from an inter-process summarize() call.
     """
 
-    data = {}   # a dictionary, {name: 4-tuple}
-    total = []  # a single 4-tuple
-    names = []  # a list of modules names in data
+    data = []   # a dictionary, {name:<6-tuples>}:
+                #   0-3 summarize() data: pass5, fail, err, all
+                #   4   bool; whether to show this item
+                #   5   None/False/True; whether the data is recent
+    total = []  # a single 4-tuple per summarize()
 
     def __init__(self, stopwords=()):
         """Takes a dotted name, a list, and two booleans.
@@ -261,6 +263,18 @@ class Summary:
     def refresh(self, base, run=False):
         """Update our information.
         """
+
+        # Mark currently fresh data as stale.
+        # ===================================
+
+        for name, datum in self.data.iteritems():
+            if datum[5] is True:
+                datum[5] = False
+
+
+        # Make the call.
+        # ==============
+
         call = ( sys.executable
                , sys.argv[0]
                , '--stopwords=%s' % ','.join(self.stopwords)
@@ -270,13 +284,29 @@ class Summary:
                , '--verbose' # always verbose; deal with empties higher up
                , base
                 )
-        #open('log', 'a+').write(' '.join(call)+'\n')
         proc = subprocess.Popen(call, stdout=subprocess.PIPE)
+        logger.debug(' '.join(call))
+
+
+        # Total
+        # =====
+
         lines = proc.stdout.read().splitlines()
         self.total = lines[-1].split()[1:]
         del lines[-1]
+
+
+        # Data
+        # ====
+        # Besides our own formatting, we also need to ignore any program output
+        # that preceded our report.
+
         start = False
         for line in lines:
+
+            # Decide if we want this line, and if so, split it on spaces.
+            # ===========================================================
+
             line = line.strip('\n')
             if line == BANNER:
                 start = True
@@ -284,7 +314,39 @@ class Summary:
             if (not start) or (not line) or line in (HEADERS, BORDER):
                 continue
             tokens = line.split()
-            self.data[tokens[0]] = tokens[1:]
+
+
+            # Convert the row to our record format.
+            # =====================================
+            # The tricky part is deciding whether to show this row: we want to
+            # list modules that have non-passing tests, or that have submodules
+            # with non-passing tests. Since data is coming to us ordered, we
+            # can count on ancestor modules already being in self.data by the
+            # time we get to a module with non-passing tests.
+
+            name = tokens[0]
+            stats = tokens[1:]
+
+            has_tests = int(stats[3]) > 0
+
+            fresh = None
+            if has_tests and ('-' not in stats):
+                fresh = True
+
+            show = False
+            if has_tests and (stats[0] != '100%'):
+                show = True
+                parts = name.split('.')[:-1]
+                for i in range(len(parts),0,-1):
+                    _name = '.'.join(parts[:i])
+                    self.data[_name][4] = True
+
+            self.data[name] = stats + [show, fresh]
+
+
+        # Store a sorted list of our keys.
+        # ================================
+
         self.names = sorted(self.data)
 
 
@@ -310,6 +372,13 @@ class CursesInterface:
     def wrapme(self, win):
         self.win = win
         curses.curs_set(0) # Don't show the cursor.
+
+        # colors
+        bg = curses.COLOR_BLACK
+        curses.init_pair(1, curses.COLOR_WHITE, bg)
+        curses.init_pair(2, curses.COLOR_RED, bg)
+        curses.init_pair(3, curses.COLOR_GREEN, bg)
+
         screen = ModulesScreen(self)
         try:
             while 1:
@@ -341,7 +410,7 @@ class Spinner:
         self.flag.put(True)
         self.thread.join()
 
-    def wrap(self, call, *args, **kwargs):
+    def __call__(self, call, *args, **kwargs):
         """Convenient way to run a routine with a spinner.
         """
         self.start()
@@ -384,7 +453,7 @@ class ModulesScreen:
 
     def reload(self):
         self.summary = Summary(self.stopwords)
-        self.spinner.wrap(self.summary.refresh, self.base)
+        self.spinner(self.summary.refresh, self.base)
 
     def get_size(self):
         """getmaxyx is 1-indexed, but just about everything else is 0-indexed.
@@ -457,7 +526,7 @@ class ModulesScreen:
                 self.draw_list()
 
             elif c == ord(' '):
-                self.spinner.wrap(self.summary.refresh,self.selected, run=True)
+                self.spinner(self.summary.refresh,self.selected, run=True)
                 self.draw_list()
 
 
@@ -467,12 +536,12 @@ class ModulesScreen:
         l = (self.W - len(self.banner)) / 2
         stop = False
         while not stop:
-            for i in range(6):
-                spun = " working%s " % ('.'*i).ljust(5)
-                self.win.addstr(0,l,spun)
+            for i in range(4):
+                spun = "  working%s  " % ('.'*i).ljust(3)
+                self.win.addstr(0,l,spun,curses.A_BOLD)
                 self.win.refresh()
                 try:
-                    stop = self.spinner.flag.get(timeout=0.1)
+                    stop = self.spinner.flag.get(timeout=0.25)
                 except Queue.Empty:
                     pass
         self.draw_banner()
@@ -480,7 +549,7 @@ class ModulesScreen:
 
     def draw_banner(self):
         l = (self.W - len(self.banner)) / 2
-        self.win.addstr(0,l,self.banner)
+        self.win.addstr(0,l,self.banner,curses.A_BOLD)
 
 
     def draw(self):
@@ -501,20 +570,32 @@ class ModulesScreen:
         # Background, border, scrollbar
         # =============================
 
+        bold = curses.A_BOLD
+
         self.win.bkgd(' ')
-        self.win.border()
+        # self.win.border() not sure how to make this A_BOLD
+        self.win.addch(0,0,curses.ACS_ULCORNER,bold)
+        self.win.addch(0,W,curses.ACS_URCORNER,bold)
+        self.win.addch(H,0,curses.ACS_LLCORNER,bold)
+        #self.win.addch(H,W,curses.ACS_LRCORNER,bold)
+        for i in range(1,W):
+            self.win.addch(0,i,curses.ACS_HLINE,bold)
+            self.win.addch(H,i,curses.ACS_HLINE,bold)
+        for i in range(1,H):
+            self.win.addch(i,0,curses.ACS_VLINE,bold)
+            self.win.addch(i,W,curses.ACS_VLINE,bold)
 
         # headers bottom border
-        self.win.addch(2,0,curses.ACS_LTEE)
+        self.win.addch(2,0,curses.ACS_LTEE,bold)
         for i in range(0,W-1):
-            self.win.addch(2,i+1,curses.ACS_HLINE)
-        self.win.addch(2,W,curses.ACS_RTEE)
+            self.win.addch(2,i+1,curses.ACS_HLINE,bold)
+        self.win.addch(2,W,curses.ACS_RTEE,bold)
 
         # column border
-        self.win.addch(0,(W-c2w-3),curses.ACS_TTEE)
-        self.win.vline(1,(W-c2w-3),curses.ACS_VLINE,H-1)
-        self.win.addch(2,(W-c2w-3),curses.ACS_PLUS)
-        self.win.addch(H,(W-c2w-3),curses.ACS_BTEE)
+        self.win.addch(0,(W-c2w-3),curses.ACS_TTEE,bold)
+        self.win.vline(1,(W-c2w-3),curses.ACS_VLINE,H-1,bold)
+        self.win.addch(2,(W-c2w-3),curses.ACS_PLUS,bold)
+        self.win.addch(H,(W-c2w-3),curses.ACS_BTEE,bold)
 
 
         # Banner text and column headers
@@ -523,17 +604,17 @@ class ModulesScreen:
         banner = " testosterone "
         l = (W - len(banner)) / 2
         r = l + len(banner)
-        self.win.addch(0,l-2,curses.ACS_LARROW)
-        self.win.addch(0,l-1,curses.ACS_VLINE)
-        self.win.addstr(0,l,banner)
-        self.win.addch(0,r,curses.ACS_VLINE)
-        self.win.addch(0,r+1,curses.ACS_RARROW)
+        self.win.addch(0,l-2,curses.ACS_LARROW,bold)
+        self.win.addch(0,l-1,curses.ACS_VLINE,bold)
+        self.win.addstr(0,l,banner,bold)
+        self.win.addch(0,r,curses.ACS_VLINE,bold)
+        self.win.addch(0,r+1,curses.ACS_RARROW,bold)
 
-        self.win.addstr(1,3,"MODULES")
-        self.win.addstr(1,self.W-c2w-1,"PASS")
-        self.win.addstr(1,self.W-c2w-1+5,"FAIL")
-        self.win.addstr(1,self.W-c2w-1+10," ERR")
-        self.win.addstr(1,self.W-c2w-1+15," ALL")
+        self.win.addstr(1,3,"MODULES",bold)
+        self.win.addstr(1,self.W-c2w-1,"PASS",bold)
+        self.win.addstr(1,self.W-c2w-1+5,"FAIL",bold)
+        self.win.addstr(1,self.W-c2w-1+10," ERR",bold)
+        self.win.addstr(1,self.W-c2w-1+15," ALL",bold)
 
 
         # Module listing
@@ -552,35 +633,50 @@ class ModulesScreen:
         c2h, c2w = self.c2
 
         self.viewrows = c1h-1
+        for i in range(self.toprows+1, self.viewrows+self.toprows):
+            self.win.addstr(i,1,' '*(c1w+2))
+            self.win.addstr(i,c1w+5,' '*(c2w+2))
         self.end = self.start + self.viewrows + 1
-
-
-        # Current selection
-        # =================
-        # Eventually I would maybe like to see this go in a message area at
-        # the bottom.
-
-        self.selected = self.summary.names[self.start+self.viewrow]
-        #selected = self.selected
-        #if len(self.selected) > self.W-17:
-        #    selected = self.selected[:self.W-20]+'...'
-        #self.win.addstr(1,13,selected.ljust(self.W-17))
-
-
         i = self.toprows
         prefix = '' # signal for submodule bullets
+        displayed = []
 
         for name in self.summary.names[self.start:self.end]:
 
-            # Short name
-            # ==========
+            try:
+                pass5, fail, err, all, show, fresh = self.summary[name]
+            except:
+                raise StandardError(self.summary[name])
+
+            if not show:
+                continue
+            displayed.append(name) # helps determine self.selected
+
+
+            # Determine highlighting for this row.
+            # ====================================
+
+            has_tests = int(all) > 0
+
+            if fresh is None and not has_tests:
+                color = curses.color_pair(1)|curses.A_DIM
+            elif fresh is None and has_tests:
+                color = curses.color_pair(1)|curses.A_BOLD
+            elif fresh is False:
+                color = curses.color_pair(2)|curses.A_DIM
+            elif fresh is True:
+                color = curses.color_pair(2)|curses.A_BOLD
+
+
+            # Short name, with indent.
+            # ========================
 
             parts = name.split('.')
             shortname = ('  '*(len(parts)-1)) + parts[-1]
             if len(shortname) > c1w:
                 shortname = shortname[:c1w-3] + '...'
             shortname = shortname.ljust(c1w)
-            self.win.addstr(i,3,shortname)
+            self.win.addstr(i,3,shortname,color)
 
 
             # Bullet(s)
@@ -588,6 +684,7 @@ class ModulesScreen:
 
             l = ' '
             r = ' '
+            a = curses.color_pair(3)|curses.A_BOLD
             if i == self.viewrow + self.toprows:
                 if not prefix:
                     prefix = name
@@ -595,17 +692,13 @@ class ModulesScreen:
                 r = curses.ACS_LARROW
             elif prefix and name.startswith(prefix):
                 l = r = curses.ACS_BULLET
-            self.win.addch(i,1,l)
-            self.win.addch(i,self.W-1,r)
+            self.win.addch(i,1,l,a)
+            self.win.addch(i,self.W-1,r,a)
 
 
             # Data
             # ====
 
-            try:
-                pass5, fail, err, all = self.summary[name]
-            except:
-                raise StandardError(self.summary[name])
             if pass5 == '-':
                 pass5 = '- '
             if len(fail) > 4:
@@ -614,14 +707,17 @@ class ModulesScreen:
                 err = '9999'
             if len(all) > 4:
                 all = '9999'
-            self.win.addstr(i,self.W-c2w-1,pass5.rjust(4))
-            self.win.addstr(i,self.W-c2w-1+5,err.rjust(4))
-            self.win.addstr(i,self.W-c2w-1+10,fail.rjust(4))
-            self.win.addstr(i,self.W-c2w-1+15,all.rjust(4))
+
+            self.win.addstr(i,self.W-c2w-1,pass5.rjust(4),color)
+            self.win.addstr(i,self.W-c2w-1+5,err.rjust(4),color)
+            self.win.addstr(i,self.W-c2w-1+10,fail.rjust(4),color)
+            self.win.addstr(i,self.W-c2w-1+15,all.rjust(4),color)
 
             i += 1
             if i > self.viewrows + self.toprows:
                 break
+
+        self.selected = displayed[self.viewrow]
 
 
         # Continuation indicators
@@ -631,15 +727,15 @@ class ModulesScreen:
             c = curses.ACS_UARROW
         else:
             c = curses.ACS_HLINE
-        self.win.addch(2,1,c)
-        self.win.addch(2,self.W-1,c)
+        self.win.addch(2,1,c,curses.A_BOLD)
+        self.win.addch(2,self.W-1,c,curses.A_BOLD)
 
         if self.end < len(self.summary):
             c = curses.ACS_LANTERN
         else:
             c = curses.ACS_HLINE
-        self.win.addch(self.H,1,c)
-        self.win.addch(self.H,self.W-1,c)
+        self.win.addch(self.H,1,c,curses.A_BOLD)
+        self.win.addch(self.H,self.W-1,c,curses.A_BOLD)
 
 
         # Finally, draw the window.
