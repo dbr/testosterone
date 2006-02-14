@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 """testosterone -- a manly Python test driver; man 1 testosterone for usage.
 """
+import Queue
 import curses
 import getopt
+import logging
 import os
 import subprocess
 import sys
+import threading
+import time
 import traceback
 import unittest
 from StringIO import StringIO
@@ -13,6 +17,15 @@ from StringIO import StringIO
 __all__ = ("detail", "summarize")
 __author__ = "Chad Whitacre <chad@zetaweb.com>"
 __version__ = "0.4"
+
+
+format = "%(name)-16s %(levelname)-8s %(message)s"
+format = "%(levelname)-8s %(message)s"
+logging.basicConfig( filename='log'
+                   , level=logging.DEBUG
+                   , format=format
+                    )
+logger = logging.getLogger('testosterone')
 
 
 # Helpers
@@ -103,7 +116,6 @@ def summarize(base, quiet=True, recursive=True, run=True, stopwords=()):
     stopword. If run is False, then no statistics on passes, failures, and
     errors will be available, and the output for each will be a dash character
     ('-'). run defaults to True.
-
 
     """
 
@@ -307,6 +319,36 @@ class CursesInterface:
             pass
 
 
+class Spinner:
+    """Represent a random work indicator, handled in a separate thread.
+    """
+
+    def __init__(self, spin):
+        """Takes a callable that actually draws/undraws the spinner.
+        """
+        self.spin = spin
+        self.flag = Queue.Queue(1)
+
+    def start(self):
+        """Show a spinner.
+        """
+        self.thread = threading.Thread(target=self.spin)
+        self.thread.start()
+
+    def stop(self):
+        """Stop the spinner.
+        """
+        self.flag.put(True)
+        self.thread.join()
+
+    def wrap(self, call, *args, **kwargs):
+        """Convenient way to run a routine with a spinner.
+        """
+        self.start()
+        call(*args, **kwargs)
+        self.stop()
+
+
 class ModulesScreen:
     """Represents the main module listing.
 
@@ -319,6 +361,7 @@ class ModulesScreen:
     """
 
     H = W = 0       # the dimensions of the window
+    banner = " testosterone " # shows up at the top
     selected = ''   # the dotted name of the currently selected item
     start = end = 0 # the current index positions in summary
     summary = {}    # a data dictionary per summarize()
@@ -334,12 +377,14 @@ class ModulesScreen:
         self.win = iface.win
         self.base = iface.base
         self.stopwords = iface.stopwords
-        self.load()
+        self.spinner = Spinner(self.spin)
+        self.summary = Summary(self.stopwords)
+        self.summary.refresh(self.base)
         self.selected = self.summary.names[self.start]
 
-    def load(self):
+    def reload(self):
         self.summary = Summary(self.stopwords)
-        self.summary.refresh(self.base, run=False)
+        self.spinner.wrap(self.summary.refresh, self.base)
 
     def get_size(self):
         """getmaxyx is 1-indexed, but just about everything else is 0-indexed.
@@ -367,7 +412,7 @@ class ModulesScreen:
                     self.win.addstr(self.H/2,(self.W-len(msg))/2,msg)
                     self.win.refresh()
                     continue
-            self.draw()
+                self.draw()
 
 
             # Trap a key.
@@ -408,12 +453,34 @@ class ModulesScreen:
                 self.draw_list()
 
             elif c == curses.KEY_F5:
-                self.load()
+                self.reload()
                 self.draw_list()
 
             elif c == ord(' '):
-                self.summary.refresh(self.selected, run=True)
+                self.spinner.wrap(self.summary.refresh,self.selected, run=True)
                 self.draw_list()
+
+
+    def spin(self):
+        """Put a 'working' indicator in the banner.
+        """
+        l = (self.W - len(self.banner)) / 2
+        stop = False
+        while not stop:
+            for i in range(6):
+                spun = " working%s " % ('.'*i).ljust(5)
+                self.win.addstr(0,l,spun)
+                self.win.refresh()
+                try:
+                    stop = self.spinner.flag.get(timeout=0.1)
+                except Queue.Empty:
+                    pass
+        self.draw_banner()
+
+
+    def draw_banner(self):
+        l = (self.W - len(self.banner)) / 2
+        self.win.addstr(0,l,self.banner)
 
 
     def draw(self):
