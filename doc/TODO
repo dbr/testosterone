@@ -1,21 +1,34 @@
+ought to have a TESTOSTERONE_STOPWORDS environment variable
 ModulesScreen
-    feedback while loading/updating
-        spinning wheel is the easy out
-        better is progress bar, but that means progressive communication with "server"
-    need to be smarter about which tests to show
-        don't show modules for which all tests pass
-        don't show modules for which there are no test
-        unless a submodule of that module has tests
-    highlight current selection better
-    distinguish fresh, stale, and un-run tests
     really should have pgup/pgdn/home/end
-    ooh! delete removes module from testing list until next reload?
-    need to display totals
 ResultsScreen
 ConsoleScreen
 
+
+=====FUTURE=====
+ModulesScreen
+    highlight current selection better -- color!
+    ooh! delete removes module from testing list until next reload?
+    feedback while loading/updating
+        better is progress bar, but that means progressive communication with "server"
+        which is complicated because of program output or pdb sessions
 
 
 =====DONE=====
 ModuleScreen
     scroll off bottom of screen is buggy
+    feedback while loading/updating
+        spinning wheel is the easy out
+    need to be smarter about which tests to show
+        don't show modules for which all tests pass
+        don't show modules for which there are no test
+        unless a submodule of that module has tests
+    highlighting
+        fresh -- cyan
+        stale -- dark blue
+        un-run tests -- gray
+        current modules -- bg
+        current submodules -- bg
+    bug: running 'task' yields no results!
+    can't write to bottom left corner! -- hacked for now
+    need to display totals

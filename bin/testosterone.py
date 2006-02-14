@@ -241,6 +241,7 @@ class Summary:
                 #   4   bool; whether to show this item
                 #   5   None/False/True; whether the data is recent
     totals = () # a single 4-tuple per summarize()
+    names = []  # a list of names for which show is True
 
     def __init__(self, stopwords=()):
         """Takes a dotted name, a list, and two booleans.
@@ -248,12 +249,15 @@ class Summary:
         self.stopwords = stopwords
         self.data = {}
         self.total = []
+        self.names = []
 
     def __getitem__(self, key):
         return self.data[key]
 
     def __len__(self):
-        return self.data.__len__()
+        """Only count items for which show is True.
+        """
+        return len([v for v in self.data.values() if v[4]])
 
     def __iter__(self):
         return self.data.__iter__()
@@ -347,7 +351,7 @@ class Summary:
         # Store a sorted list of our keys.
         # ================================
 
-        self.names = sorted(self.data)
+        self.names = sorted([n for n in self.data if self.data[n][4]])
 
 
 if '--foo' in sys.argv:
@@ -419,6 +423,11 @@ class Spinner:
         self.stop()
 
 
+class DoneScrolling(StandardError):
+    """Represents the edge of a scrolling area.
+    """
+
+
 class ModulesScreen:
     """Represents the main module listing.
 
@@ -432,6 +441,7 @@ class ModulesScreen:
 
     H = W = 0       # the dimensions of the window
     banner = " testosterone " # shows up at the top
+    bottomrows = 3  # the number of boilerplate rows at the bottom
     selected = ''   # the dotted name of the currently selected item
     start = end = 0 # the current index positions in summary
     summary = {}    # a data dictionary per summarize()
@@ -487,48 +497,71 @@ class ModulesScreen:
 
             # Trap a key.
             # ===========
+            # The first couple exit early, the rest want to redraw the list.
 
             c = self.win.getch()
 
             if c == ord('q'):
                 raise KeyboardInterrupt
-
             elif c == ord('h'):
-                pass # return HelpScreen(self.iface)
+                continue # return HelpScreen(self.iface)
 
-            elif c == curses.KEY_UP:
-                if self.viewrow == 0:
-                    if self.start == 0:
-                        curses.beep()
-                        continue
-                    self.start -= 1
-                    self.draw_list()
-                    continue
-                self.viewrow -= 1
-                self.draw_list()
-
-            elif c == curses.KEY_DOWN:
-                numrows = len(self.summary)
-                if self.viewrow == self.viewrows:
-                    if (self.start+self.viewrows) == numrows-1:
-                        curses.beep()
-                        continue
-                    self.start += 1
-                    self.draw_list()
-                    continue
-                if self.viewrow == numrows:
-                    curses.beep()
-                    continue
-                self.viewrow += 1
-                self.draw_list()
-
-            elif c == curses.KEY_F5:
+            if c == curses.KEY_UP:    # up
+                self.scroll(1)
+            elif c == curses.KEY_DOWN:  # down
+                self.scroll(-1)
+            elif c == curses.KEY_NPAGE: # page up
+                self.scroll(-(self.viewrows*2)-1)
+                self.viewrow = 0
+            elif c == curses.KEY_PPAGE: # page down
+                self.scroll((self.viewrows*2)-1)
+                self.viewrow = 0
+            elif c == curses.KEY_F5:    # F5
                 self.reload()
-                self.draw_list()
-
             elif c == ord(' '):
-                self.spinner(self.summary.refresh,self.selected, run=True)
-                self.draw_list()
+                self.spinner(self.summary.refresh, self.selected, run=True)
+            self.draw_list()
+
+
+    def scroll_one(self, down=False):
+        """Scroll the viewport up by one row, or down if down is True.
+        """
+
+        up = not down
+        numrows = len(self.summary)-1
+
+        if up: # scroll up
+            if self.viewrow == 0: # top of viewport
+                if self.start == 0: # top of list
+                    raise DoneScrolling
+                else: # not top of list
+                    self.start -= 1
+            else: # not top of viewport
+                self.viewrow -= 1
+
+        elif down: # scroll down
+            if self.viewrow == numrows: # bottom of list
+                raise DoneScrolling
+            else: # not bottom of list
+                if self.viewrow == self.viewrows: # bottom of viewport
+                    self.start += 1
+                else: # not bottom of viewport
+                    self.viewrow += 1
+
+        ints = self.viewrow, self.viewrows, self.start, numrows
+        logger.debug(' '.join([str(i) for i in ints]))
+
+
+    def scroll(self, delta):
+        """Viewport scrolling.
+        """
+        down = delta < 0
+        delta = abs(delta)
+        try:
+            for i in range(delta):
+                self.scroll_one(down)
+        except DoneScrolling:
+            curses.beep()
 
 
     def spin(self):
@@ -561,15 +594,16 @@ class ModulesScreen:
         # ==========================================
 
         H,W = self.H,self.W
-        c1h = c2h = H - self.toprows
+        c1h = c2h = H - self.toprows - self.bottomrows
         c2w = 20
         c1w = W - c2w - 7
         self.c1 = (c1h, c1w)
         self.c2 = (c2h, c2w)
+        self.viewrows = c1h
 
 
-        # Background, border, scrollbar
-        # =============================
+        # Background and border
+        # =====================
 
         bold = curses.A_BOLD
 
@@ -641,24 +675,26 @@ class ModulesScreen:
         c1h, c1w = self.c1
         c2h, c2w = self.c2
 
-        self.viewrows = c1h-3
+        # erase current listing
         for i in range(self.toprows+1, self.viewrows+self.toprows):
             self.win.addstr(i,1,' '*(c1w+2))
             self.win.addstr(i,c1w+5,' '*(c2w+2))
-        self.end = self.start + self.viewrows + 1
-        i = self.toprows
+
         prefix = '' # signal for submodule bullets
         displayed = []
+        rownum = 0  # the row we are currently outputting
+        self.end = self.start + self.viewrows + 1
 
-        for name in self.summary.names[self.start:self.end]:
+        for i in range(self.start, self.end):
 
-            try:
-                pass5, fail, err, all, show, fresh = self.summary[name]
-            except:
-                raise StandardError(self.summary[name])
+            name = self.summary.names[i]
+            rownum = self.toprows + i - self.start
 
-            if not show:
-                continue
+            ints = (self.start, self.end, rownum)
+            logger.debug(' '.join([str(i) for i in ints]))
+
+            pass5, fail, err, all, show, fresh = self.summary[name]
+
             displayed.append(name) # helps determine self.selected
 
 
@@ -685,7 +721,7 @@ class ModulesScreen:
             if len(shortname) > c1w:
                 shortname = shortname[:c1w-3] + '...'
             shortname = shortname.ljust(c1w)
-            self.win.addstr(i,3,shortname,color)
+            self.win.addstr(rownum,3,shortname,color)
 
 
             # Bullet(s)
@@ -694,15 +730,15 @@ class ModulesScreen:
             l = ' '
             r = ' '
             a = curses.color_pair(3)|curses.A_BOLD
-            if i == self.viewrow + self.toprows:
+            if i == self.viewrow+self.toprows:
                 if not prefix:
                     prefix = name
                 l = curses.ACS_RARROW
                 r = curses.ACS_LARROW
             elif prefix and name.startswith(prefix):
                 l = r = curses.ACS_BULLET
-            self.win.addch(i,1,l,a)
-            self.win.addch(i,self.W-1,r,a)
+            self.win.addch(rownum,1,l,a)
+            self.win.addch(rownum,self.W-1,r,a)
 
 
             # Data
@@ -717,13 +753,13 @@ class ModulesScreen:
             if len(all) > 4:
                 all = '9999'
 
-            self.win.addstr(i,self.W-c2w-1,pass5.rjust(4),color)
-            self.win.addstr(i,self.W-c2w-1+5,err.rjust(4),color)
-            self.win.addstr(i,self.W-c2w-1+10,fail.rjust(4),color)
-            self.win.addstr(i,self.W-c2w-1+15,all.rjust(4),color)
+            w = self.W-c2w-1
+            self.win.addstr(rownum,w,pass5.rjust(4),color)
+            self.win.addstr(rownum,w+5,err.rjust(4),color)
+            self.win.addstr(rownum,w+10,fail.rjust(4),color)
+            self.win.addstr(rownum,w+15,all.rjust(4),color)
 
-            i += 1
-            if i > self.viewrows + self.toprows:
+            if i > len(self.summary)+1:
                 break
 
         self.selected = displayed[self.viewrow]
