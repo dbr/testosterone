@@ -9,15 +9,18 @@ import sys
 import unittest
 from StringIO import StringIO
 
-
-__all__ = ('run', 'summarize')
-
-
-WINDOWS = 'win' in sys.platform
+__all__ = ("run", "summarize")
+__author__ = "Chad Whitacre <chad@zetaweb.com>"
+__version__ = "0.4"
 
 
 # Helpers
 # =======
+
+C = '-'
+BANNER = C*31 + "<| testosterone |>" + C*31
+BORDER = C * 80
+WINDOWS = 'win' in sys.platform
 
 class dev_null:
     """Output buffer that swallows everything.
@@ -56,15 +59,15 @@ def run(name_dotted):
 
     # Run tests.
     # ==========
-    # We want the test results on standard out, but not any of the program's
-    # output.
+    # We only write our report to stdout after the tests have been run. This is
+    # necessary because we don't want to clutter the report with an program
+    # output and/or pdb sessions.
 
-    sys.stdout = dev_null()
-    testout = StringIO()
-    runner = unittest.TextTestRunner(testout)
+    out = StringIO()
+    runner = unittest.TextTestRunner(out)
     result = runner.run(suite)
-    sys.stdout = sys.__stdout__
-    print testout.getvalue()
+    print BANNER
+    print out.getvalue()
 
     return (not result.wasSuccessful())
 
@@ -136,16 +139,15 @@ def summarize(base, quiet=True, recursive=True, run=True, stopwords=()):
 
     # Write our output.
     # =================
-    # Capture stdout to prevent program output from cluttering up our report.
+    # Divert testing output to prevent program output and pdb sessions from
+    # cluttering up our report.
 
     out = StringIO()
-    sys.stdout = dev_null()
 
     # Header
-    c = '-'
-    print >> out, c*31 + "<| testosterone |>" + c*31
+    print >> out, BANNER
     print >> out, "MODULE".ljust(60), "PASS", "FAIL", " ERR", " ALL"
-    print >> out, c * 80
+    print >> out, BANNER
 
     # Data
     tpass5 = tfail = terr = tall = '-'
@@ -201,15 +203,19 @@ def summarize(base, quiet=True, recursive=True, run=True, stopwords=()):
     tfail = str(tfail).rjust(4)
     terr = str(terr).rjust(4)
     tall = str(tall).rjust(4)
-    print >> out, c * 80
+    print >> out, BORDER
     print >> out, "TOTAL".ljust(60), tpass5, tfail, terr, tall
 
 
-    # Restore stdout and output our report.
-    # =====================================
+    # Output our report.
+    # ==================
 
-    sys.stdout = sys.__stdout__
-    print >> sys.stdout, out.getvalue()
+    print out.getvalue()
+
+
+
+# Interactive interface
+# =====================
 
 
 
