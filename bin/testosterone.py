@@ -102,9 +102,6 @@ def summarize(base, quiet=True, recursive=True, run=True, stopwords=()):
 
     """
 
-    stats = []
-
-
     # Get modules.
     # ============
 
@@ -139,13 +136,16 @@ def summarize(base, quiet=True, recursive=True, run=True, stopwords=()):
 
     # Write our output.
     # =================
+    # Capture stdout to prevent program output from cluttering up our report.
 
+    out = StringIO()
+    sys.stdout = dev_null()
 
     # Header
     c = '-'
-    print c*31 + "<| testosterone |>" + c*31
-    print "MODULE".ljust(60), "PASS", "FAIL", " ERR", " ALL"
-    print c * 80
+    print >> out, c*31 + "<| testosterone |>" + c*31
+    print >> out, "MODULE".ljust(60), "PASS", "FAIL", " ERR", " ALL"
+    print >> out, c * 80
 
     # Data
     tpass5 = tfail = terr = tall = '-'
@@ -184,7 +184,7 @@ def summarize(base, quiet=True, recursive=True, run=True, stopwords=()):
         all = str(all).rjust(4)
 
         if yes:
-            print name, pass5, fail, err, all
+            print >> out, name, pass5, fail, err, all
 
     # Footer
     if tall:
@@ -201,9 +201,15 @@ def summarize(base, quiet=True, recursive=True, run=True, stopwords=()):
     tfail = str(tfail).rjust(4)
     terr = str(terr).rjust(4)
     tall = str(tall).rjust(4)
-    print c * 80
-    print "TOTAL".ljust(60), tpass5, tfail, terr, tall
+    print >> out, c * 80
+    print >> out, "TOTAL".ljust(60), tpass5, tfail, terr, tall
 
+
+    # Restore stdout and output our report.
+    # =====================================
+
+    sys.stdout = sys.__stdout__
+    print >> sys.stdout, out.getvalue()
 
 
 
@@ -235,10 +241,10 @@ def main(argv=None):
 
         stopwords = []      # -g
         interactive = True  # -i
-        run_ = True          # -n
+        run_ = True         # -n
         quiet = True        # -q
         recursive = True    # -r
-        summary = True     # -s
+        summary = True      # -s
 
         for opt, value in opts:
             if opt in ('-I', '--scripted'):
