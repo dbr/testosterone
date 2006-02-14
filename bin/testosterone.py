@@ -240,7 +240,7 @@ class Summary:
                 #   0-3 summarize() data: pass5, fail, err, all
                 #   4   bool; whether to show this item
                 #   5   None/False/True; whether the data is recent
-    total = []  # a single 4-tuple per summarize()
+    totals = () # a single 4-tuple per summarize()
 
     def __init__(self, stopwords=()):
         """Takes a dotted name, a list, and two booleans.
@@ -292,7 +292,7 @@ class Summary:
         # =====
 
         lines = proc.stdout.read().splitlines()
-        self.total = lines[-1].split()[1:]
+        self.totals = lines[-1].split()[1:]
         del lines[-1]
 
 
@@ -378,6 +378,7 @@ class CursesInterface:
         curses.init_pair(1, curses.COLOR_WHITE, bg)
         curses.init_pair(2, curses.COLOR_RED, bg)
         curses.init_pair(3, curses.COLOR_GREEN, bg)
+        curses.init_pair(4, curses.COLOR_CYAN, bg)
 
         screen = ModulesScreen(self)
         try:
@@ -573,11 +574,11 @@ class ModulesScreen:
         bold = curses.A_BOLD
 
         self.win.bkgd(' ')
-        # self.win.border() not sure how to make this A_BOLD
+        self.win.border() # not sure how to make this A_BOLD
         self.win.addch(0,0,curses.ACS_ULCORNER,bold)
         self.win.addch(0,W,curses.ACS_URCORNER,bold)
         self.win.addch(H,0,curses.ACS_LLCORNER,bold)
-        #self.win.addch(H,W,curses.ACS_LRCORNER,bold)
+        #self.win.addch(H,W,curses.ACS_LRCORNER,bold) error! why?
         for i in range(1,W):
             self.win.addch(0,i,curses.ACS_HLINE,bold)
             self.win.addch(H,i,curses.ACS_HLINE,bold)
@@ -591,11 +592,19 @@ class ModulesScreen:
             self.win.addch(2,i+1,curses.ACS_HLINE,bold)
         self.win.addch(2,W,curses.ACS_RTEE,bold)
 
+        # footer top border
+        self.win.addch(H-2,0,curses.ACS_LTEE,bold)
+        for i in range(0,W-1):
+            self.win.addch(H-2,i+1,curses.ACS_HLINE,bold)
+        self.win.addch(H-2,W,curses.ACS_RTEE,bold)
+
         # column border
-        self.win.addch(0,(W-c2w-3),curses.ACS_TTEE,bold)
-        self.win.vline(1,(W-c2w-3),curses.ACS_VLINE,H-1,bold)
-        self.win.addch(2,(W-c2w-3),curses.ACS_PLUS,bold)
-        self.win.addch(H,(W-c2w-3),curses.ACS_BTEE,bold)
+        bw = (W-c2w-3)
+        self.win.addch(0,bw,curses.ACS_TTEE,bold)
+        self.win.vline(1,bw,curses.ACS_VLINE,H-1,bold)
+        self.win.addch(2,bw,curses.ACS_PLUS,bold)
+        self.win.addch(H-2,bw,curses.ACS_PLUS,bold)
+        self.win.addch(H,bw,curses.ACS_BTEE,bold)
 
 
         # Banner text and column headers
@@ -632,7 +641,7 @@ class ModulesScreen:
         c1h, c1w = self.c1
         c2h, c2w = self.c2
 
-        self.viewrows = c1h-1
+        self.viewrows = c1h-3
         for i in range(self.toprows+1, self.viewrows+self.toprows):
             self.win.addstr(i,1,' '*(c1w+2))
             self.win.addstr(i,c1w+5,' '*(c2w+2))
@@ -736,6 +745,29 @@ class ModulesScreen:
             c = curses.ACS_HLINE
         self.win.addch(self.H,1,c,curses.A_BOLD)
         self.win.addch(self.H,self.W-1,c,curses.A_BOLD)
+
+
+        # Totals
+        # ======
+
+        color = curses.color_pair(4)|curses.A_BOLD
+
+        tpass5, tfail, terr, tall = self.summary.totals
+        if tpass5 == '-':
+            tpass5 = '- '
+        if len(tfail) > 4:
+            tfail = '9999'
+        if len(terr) > 4:
+            terr = '9999'
+        if len(tall) > 4:
+            tall = '9999'
+
+        h = self.H-1
+        w = self.W-c2w-1
+        self.win.addstr(h,w,tpass5.rjust(4),color)
+        self.win.addstr(h,w+5,terr.rjust(4),color)
+        self.win.addstr(h,w+10,tfail.rjust(4),color)
+        self.win.addstr(h,w+15,tall.rjust(4),color)
 
 
         # Finally, draw the window.
