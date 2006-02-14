@@ -9,7 +9,7 @@ import sys
 import unittest
 from StringIO import StringIO
 
-__all__ = ("run", "summarize")
+__all__ = ("detail", "summarize")
 __author__ = "Chad Whitacre <chad@zetaweb.com>"
 __version__ = "0.4"
 
@@ -44,7 +44,7 @@ def flatten(_suite):
 # Basic API
 # =========
 
-def run(name_dotted):
+def detail(name_dotted):
     """Given a module dotted name, run that module's tests.
     """
 
@@ -247,7 +247,7 @@ def main(argv=None):
 
         stopwords = []      # -g
         interactive = True  # -i
-        run_ = True         # -n
+        run = True          # -n
         quiet = True        # -q
         recursive = True    # -r
         summary = True      # -s
@@ -256,7 +256,7 @@ def main(argv=None):
             if opt in ('-I', '--scripted'):
                 interactive = False
             elif opt in ('-N', '--find'):
-                run_ = False
+                run = False
             elif opt in ('-Q', '--verbose'):
                 quiet = False
             elif opt in ('-R', '--flat'):
@@ -272,9 +272,9 @@ def main(argv=None):
 
         if WINDOWS or not interactive:
             if summary:
-                summarize(base, quiet, recursive, run_, stopwords)
+                summarize(base, quiet, recursive, run, stopwords)
             else:
-                run(base)
+                detail(base)
         else:
             CursesInterface(base)
 
