@@ -25,6 +25,7 @@ clean:
 #	rm -rf doc/python.1.html
 #	rm -rf dist
 	find . -name \*.pyc | xargs rm
+	find . -name testosterone.log | xargs rm
 
 
 install: configure
