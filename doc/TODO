@@ -1,8 +1,8 @@
 ought to have a TESTOSTERONE_STOPWORDS environment variable
 ModulesScreen
-    really should have pgup/pgdn/home/end
 ResultsScreen
 ConsoleScreen
+logging -- disable or put in temp directory or something
 
 
 =====FUTURE=====
@@ -32,3 +32,4 @@ ModuleScreen
     bug: running 'task' yields no results!
     can't write to bottom left corner! -- hacked for now
     need to display totals
+    really should have pgup/pgdn/home/end
