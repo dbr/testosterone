@@ -1,8 +1,10 @@
 ought to have a TESTOSTERONE_STOPWORDS environment variable
 ModulesScreen
+    bottom row should show current selection and stats
+    bug: summary borks on base='testosterone.test'
 ResultsScreen
 ConsoleScreen
-logging -- disable or put in temp directory or something
+
 
 
 =====FUTURE=====
@@ -33,3 +35,4 @@ ModuleScreen
     can't write to bottom left corner! -- hacked for now
     need to display totals
     really should have pgup/pgdn/home/end
+    total highlight: white when unrun, red when failing, green when 100% passing
