@@ -1,8 +1,8 @@
 ought to have a TESTOSTERONE_STOPWORDS environment variable
 ModulesScreen
-    currow should persist across runs
-    bottom row should show current selection and stats
-    bug: summary borks on base='testosterone.test'
+    bug: not using last row of listing
+    bug: not seeing bottom continuation indicator
+    need to do something with errors
 ResultsScreen
 ConsoleScreen
 
@@ -37,3 +37,7 @@ ModuleScreen
     need to display totals
     really should have pgup/pgdn/home/end
     total highlight: white when unrun, red when failing, green when 100% passing
+    currow should persist across runs
+    bottom row should show current selection and stats
+    bug: summary borks on base='testosterone.test'
+    bug: resize smaller borks
