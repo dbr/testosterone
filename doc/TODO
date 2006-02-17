@@ -1,6 +1,6 @@
 ought to have a TESTOSTERONE_STOPWORDS environment variable
-ModulesScreen
-ResultsScreen
+DetailScreen
+    Detail
 ConsoleScreen
 
 
@@ -41,3 +41,4 @@ ModuleScreen
     bug: not using last row of listing
     bug: not seeing bottom continuation indicator
     need to do something with errors
+ModuleScreen -> SummaryScreen
