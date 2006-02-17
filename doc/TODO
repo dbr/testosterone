@@ -1,6 +1,9 @@
 ought to have a TESTOSTERONE_STOPWORDS environment variable
 DetailScreen
-    Detail
+    should immediately switch and then show 'working...'
+    move module name to bottom
+    make panes scroll -- includes arrows and continuation indicators
+    q: KeyboardInterrupt -> ESC
 ConsoleScreen
 
 
@@ -42,3 +45,5 @@ ModuleScreen
     bug: not seeing bottom continuation indicator
     need to do something with errors
 ModuleScreen -> SummaryScreen
+DetailScreen
+    Detail
