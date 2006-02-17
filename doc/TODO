@@ -1,9 +1,10 @@
 ought to have a TESTOSTERONE_STOPWORDS environment variable
 DetailScreen
-    should immediately switch and then show 'working...'
-    move module name to bottom
-    make panes scroll -- includes arrows and continuation indicators
+    format result with textwrap
+    polish it up
+    consider putting the usual totals from summary in the footer (red/green)
     q: KeyboardInterrupt -> ESC
+    continuation indicators
 ConsoleScreen
 
 
@@ -47,3 +48,6 @@ ModuleScreen
 ModuleScreen -> SummaryScreen
 DetailScreen
     Detail
+    should immediately switch and then show 'working...'
+    move module name to bottom
+    make panes scroll -- includes arrows and continuation indicators
