@@ -1,4 +1,4 @@
-ought to have a TESTOSTERONE_STOPWORDS environment variable
+consider a TESTOSTERONE_STOPWORDS environment variable
 SummaryScreen
     loses selection returning from DetailScreen
 DetailScreen
@@ -44,6 +44,7 @@ SummaryScreen
     bug: not seeing bottom continuation indicator
     need to do something with errors
     continuation indicators -> scrollbars!
+    should refuse to attempt run for module with 0 tests
 ModuleScreen -> SummaryScreen
 DetailScreen
     Detail
@@ -55,3 +56,8 @@ DetailScreen
     consider putting the usual totals from summary in the footer (red/green)
     continuation indicators -> scrollbars!
     q: KeyboardInterrupt -> ESC
+    enter -> opens traceback in ErrorScreen
+    hitting enter should update stats before going to DetailScreen
+    add left/right key support
+    should only go to DetailScreen if tests don't pass
+    trim module name in footer
