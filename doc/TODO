@@ -1,10 +1,8 @@
 ought to have a TESTOSTERONE_STOPWORDS environment variable
+SummaryScreen
+    loses selection returning from DetailScreen
 DetailScreen
-    consider putting the usual totals from summary in the footer (red/green)
-    continuation indicators -> scrollbars!
-    q: KeyboardInterrupt -> ESC
-    done one, page down x2 error
-    resize shouldn't trigger refresh
+    done one, page down x2 error -- lost it :-(
 ConsoleScreen
 
 
@@ -19,7 +17,7 @@ ModulesScreen
 
 
 =====DONE=====
-ModuleScreen
+SummaryScreen
     scroll off bottom of screen is buggy
     feedback while loading/updating
         spinning wheel is the easy out
@@ -45,6 +43,7 @@ ModuleScreen
     bug: not using last row of listing
     bug: not seeing bottom continuation indicator
     need to do something with errors
+    continuation indicators -> scrollbars!
 ModuleScreen -> SummaryScreen
 DetailScreen
     Detail
@@ -52,3 +51,7 @@ DetailScreen
     move module name to bottom
     make panes scroll -- includes arrows and continuation indicators
     format result with textwrap
+    resize shouldn't trigger refresh
+    consider putting the usual totals from summary in the footer (red/green)
+    continuation indicators -> scrollbars!
+    q: KeyboardInterrupt -> ESC
