@@ -1,8 +1,7 @@
 consider a TESTOSTERONE_STOPWORDS environment variable
 SummaryScreen
-    loses selection returning from DetailScreen
 DetailScreen
-    done one, page down x2 error -- lost it :-(
+    done one, page down x2 error -- lost it, twice :^(
 ConsoleScreen
 
 
@@ -61,3 +60,4 @@ DetailScreen
     add left/right key support
     should only go to DetailScreen if tests don't pass
     trim module name in footer
+    loses selection returning from DetailScreen
