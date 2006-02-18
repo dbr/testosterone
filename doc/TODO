@@ -1,10 +1,10 @@
 ought to have a TESTOSTERONE_STOPWORDS environment variable
 DetailScreen
-    format result with textwrap
-    polish it up
     consider putting the usual totals from summary in the footer (red/green)
+    continuation indicators -> scrollbars!
     q: KeyboardInterrupt -> ESC
-    continuation indicators
+    done one, page down x2 error
+    resize shouldn't trigger refresh
 ConsoleScreen
 
 
@@ -51,3 +51,4 @@ DetailScreen
     should immediately switch and then show 'working...'
     move module name to bottom
     make panes scroll -- includes arrows and continuation indicators
+    format result with textwrap
