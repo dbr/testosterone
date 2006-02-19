@@ -1,11 +1,12 @@
 consider a TESTOSTERONE_STOPWORDS environment variable
-refactor to account for TestCase in between module and individual tests
 
 ScrollArea
     consider wrapping: scroll off bottom jumps back to top
+    still some edge cases out there I think
 SummaryScreen
 DetailScreen
     result not cleaned between displays
+    when focus is on result during refresh, refresh doesn't get refreshed
     done one, page down x2 error -- lost it, twice :^(
     up always beeps in result pane
 ConsoleScreen
@@ -66,3 +67,4 @@ DetailScreen
     should only go to DetailScreen if tests don't pass
     trim module name in footer
     loses selection returning from DetailScreen
+refactor to account for TestCase in between module and individual tests
