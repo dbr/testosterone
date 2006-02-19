@@ -1,9 +1,14 @@
 consider a TESTOSTERONE_STOPWORDS environment variable
+refactor to account for TestCase in between module and individual tests
+
+ScrollArea
+    consider wrapping: scroll off bottom jumps back to top
 SummaryScreen
 DetailScreen
+    result not cleaned between displays
     done one, page down x2 error -- lost it, twice :^(
+    up always beeps in result pane
 ConsoleScreen
-refactor to account for TestCase in between module and individual tests
 
 
 =====FUTURE=====
