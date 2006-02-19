@@ -3,8 +3,7 @@ SummaryScreen
 DetailScreen
     done one, page down x2 error -- lost it, twice :^(
 ConsoleScreen
-refactor to account for TestCase in between module and test
-
+refactor to account for TestCase in between module and individual tests
 
 
 =====FUTURE=====
