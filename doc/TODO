@@ -12,8 +12,7 @@ DetailScreen
 DebuggingScreen
     command history
     deal better with resizes
-    try to keep scrollback
-    safely restore curses state after exiting DebuggingScreen
+    try to keep scrollback (paging)
 
 
 
@@ -80,3 +79,4 @@ DebuggingScreen
     capture lines of input and pass them back to the client
     react to EOF
     exit cleanly
+    safely restore curses state after exiting DebuggingScreen
