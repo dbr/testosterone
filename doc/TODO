@@ -1,15 +1,20 @@
 consider a TESTOSTERONE_STOPWORDS environment variable
+add ability to cancel a report refresh
 
 ScrollArea
     consider wrapping: scroll off bottom jumps back to top
     still some edge cases out there I think
 SummaryScreen
 DetailScreen
-    result not cleaned between displays
     when focus is on result during refresh, refresh doesn't get refreshed
-    done one, page down x2 error -- lost it, twice :^(
+    down one, page down x2 error -- lost it, twice :^(
     up always beeps in result pane
-ConsoleScreen
+DebuggingScreen
+    command history
+    deal better with resizes
+    try to keep scrollback
+    safely restore curses state after exiting DebuggingScreen
+
 
 
 =====FUTURE=====
@@ -67,4 +72,11 @@ DetailScreen
     should only go to DetailScreen if tests don't pass
     trim module name in footer
     loses selection returning from DetailScreen
+    result not cleaned between displays
 refactor to account for TestCase in between module and individual tests
+DebuggingScreen
+    proxying a child process's stdin/stdout
+    selectively triggering I/O proxing based on the output
+    capture lines of input and pass them back to the client
+    react to EOF
+    exit cleanly
