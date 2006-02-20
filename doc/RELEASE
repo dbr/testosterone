@@ -1,6 +1,6 @@
 when svn is stable, tag the release, then update the following items on the tag:
 
-    setup.py
+    setup.py -- version
     README (paths in installation instructions)
     man/man1/pytest.1 (add note to HISTORY; change date)
     Makefile (version variable in doc/release section)
