@@ -42,24 +42,16 @@ debugger (Pdb) sessions are available in both scripted and interactive modes.
 
 .Bl -tag -width "--interactive" -compact
 
-.It Fl i
-.It Fl -interactive
-Use the
-.Xr curses 3
-interface. This is the default.
-
-.It Fl I
+.It Fl s
 .It Fl -scripted
-Use the command-line interface.
-
-.It Fl n
-.It Fl -run
+Use the command-line interface. If not set,
 .Nm
-should run all TestCases that it finds. This only obtains in scripted mode, for
-summary reports, where it is the default.
+will use the
+.Xr curses 3
+interface.
 
-.It Fl N
-.It Fl -find
+.It Fl f
+.It Fl -find-only
 .Nm
 should find TestCases but not run them. This only obtains in scripted mode, for
 summary reports.
@@ -114,9 +106,9 @@ summary report to the standard output of the format (actually 80 chars wide):
     -------------<| testosterone |>-------------
     <header row>
     --------------------------------------------
-    <name> <passing> <failures> <errors> <total>
+    <name>   <passing> <failures> <errors> <all>
     --------------------------------------------
-    TOTALS <passing> <failures> <errors> <total>
+    TOTALS   <passing> <failures> <errors> <all>
 .Ef
 
 .Pp
@@ -190,7 +182,7 @@ You can send a SIGINT (<ctrl>-C) at any time to exit
 The summary screen shows the summary report as described above, but item names
 are indented rather than given in full. Modules are shown in gray, and un-run
 TestCases in white. TestCases with non-passing tests are shown in red, and those
-which pass in green.
+that pass in green.
 
 You may run any subset of the presented tests. The totals for the most recent
 test run are shown at the bottom of the screen, in green if all tests pass, red
@@ -203,7 +195,7 @@ Refresh the list of available TestCases without running them.
 .It Em enter
 Run the selected tests and go to the detail screen if there are non-passing
 tests.
-.It Em Q
+.It Em q
 Exit
 .Nm .
 .It Em right-arrow
@@ -227,8 +219,8 @@ Run the tests again.
 Open the traceback for the selected test in an error screen.
 .It Em left-arrow
 Alias for
-.Em Q .
-.It Em Q
+.Em q .
+.It Em q
 Exit back to the summary screen.
 .It Em right-arrow
 Alias for
@@ -246,8 +238,8 @@ The error screen provides a primitive pager for viewing tracebacks.
 .Bl -hang -width "      "
 .It Em left-arrow
 Alias for
-.Em Q .
-.It Em Q
+.Em q .
+.It Em q
 Exit back to the previous screen.
 .El
 
