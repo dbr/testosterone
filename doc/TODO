@@ -1,7 +1,10 @@
 release
     package
     update website
+    cheeseshop
+    PyCon wiki
     screencast
+    announcement
 
 consider a TESTOSTERONE_STOPWORDS environment variable
 add ability to cancel a report refresh

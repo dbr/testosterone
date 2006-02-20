@@ -54,6 +54,9 @@ dist: clean
 	find dist/testosterone-${version} -name \.svn | xargs rm -r
 	tar --directory dist -zcf dist/testosterone-${version}.tgz testosterone-${version}
 	tar --directory dist -jcf dist/testosterone-${version}.tbz testosterone-${version}
+
+# ZIP archive gets different line endings and script name
 	svneol clean -w dist/testosterone-${version}
+	mv dist/testosterone-${version}/bin/testosterone.py dist/testosterone-${version}/bin/testosterone
 	cd dist && zip -9rq testosterone-${version}.zip testosterone-${version}
 #	rm -rf dist/testosterone-${version}

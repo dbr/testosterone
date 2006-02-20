@@ -1,15 +1,8 @@
 when svn is stable, tag the release, then update the following items on the tag:
-
-    setup.py -- version
-    README (paths in installation instructions)
-    man/man1/pytest.1 (add note to HISTORY; change date)
-    Makefile (version variable in doc/release section)
-    site-packages/testosterone/__init__.py
+    setup.py            version
+    doc/testosterone.1  add note to HISTORY; change date
+    Makefile            version variable at top
+    site-packages/testosterone/__init__.py __version__
 
 make dist will re-generate docs and build archives
-
-archives etc. won't go back in svn but docs will
-
-when it's all set, check the tag WC back in
-
-release is done!
+    put docs and archives on zetadev.com/software
