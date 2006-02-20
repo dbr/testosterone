@@ -9,6 +9,7 @@ DetailScreen
     when focus is on result during refresh, refresh doesn't get refreshed
     down one, page down x2 error -- lost it, twice :^(
     up always beeps in result pane
+    bug: fron traceback screen,
 DebuggingScreen
     command history
     deal better with resizes
