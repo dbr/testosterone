@@ -24,6 +24,7 @@ clean:
 	rm -rf build
 	rm -rf dist
 	find . -name \*.pyc | xargs rm
+	make -C doc/tex clean
 
 
 install: configure
