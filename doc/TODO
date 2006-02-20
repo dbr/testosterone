@@ -17,7 +17,10 @@ DetailScreen
     down one, page down x2 error -- lost it, twice :^(
     up always beeps in result pane
     bug: fron traceback screen,
+ErrorScreen
+    really want to use a real pager for this if we can
 DebuggingScreen
+    really want to use the underlying terminal for this if we can
     command history
     deal better with resizes
     try to keep scrollback (paging)
