@@ -48,34 +48,33 @@ uninstall:
 
 # release parameters -- not meaningful for local use
 version=trunk
-man_prefix = /usr/local/www/www.zetadev.com/software/pytest/${version}/man
+man_prefix = /usr/local/www/www.zetadev.com/software/testosterone/${version}/man
 
 
-docs:
+doc:
 # auto-generate some docs
-	epydoc -o doc/api site-packages/PyTest site-packages/ASTutils
-	man -M ${man_prefix} pytest | rman -f HTML > doc/pytest.1.html
+	cd doc/tex
+	make
 
-
-release:clean docs
+release:clean doc
 # do a release; not using setup.py because afaict sdist doesn't allow for
 # Makefile, etc.
 
 # build a source distribution
-	mkdir -p pytest-${version}/doc
-	cp -r doc/tutorial.pyt pytest-${version}/doc
-	cp -r doc/api pytest-${version}/doc/api
-	cp -r bin pytest-${version}/
-	cp -r man pytest-${version}/
-	cp -r site-packages pytest-${version}/
-	cp README setup.py pytest-${version}/
-	cp Makefile-release pytest-${version}/Makefile
+	mkdir -p testosterone-${version}/doc
+	cp -r doc/tutorial.pyt testosterone-${version}/doc
+	cp -r doc/api testosterone-${version}/doc/api
+	cp -r bin testosterone-${version}/
+	cp -r man testosterone-${version}/
+	cp -r site-packages testosterone-${version}/
+	cp README setup.py testosterone-${version}/
+	cp Makefile-release testosterone-${version}/Makefile
 
 # tar it up
 	mkdir dist
-	tar zcf dist/pytest-${version}.tar.gz pytest-${version}
-	tar cf dist/pytest-${version}.tar pytest-${version}
-	bzip2 dist/pytest-${version}.tar
+	tar zcf dist/testosterone-${version}.tar.gz testosterone-${version}
+	tar cf dist/testosterone-${version}.tar testosterone-${version}
+	bzip2 dist/testosterone-${version}.tar
 
 # and clean up
-	rm -rf pytest-${version}
+	rm -rf testosterone-${version}

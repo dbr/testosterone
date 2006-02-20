@@ -13,7 +13,7 @@ You can send a \code{SIGINT} (\code{<ctrl>-C}) at any time to exit
 \program{testosterone}.
 
 
-\section{Summary Screen}
+\section{Summary Screen \label{summary}}
 
 The summary screen shows the summary report as described above, but item names
 are indented rather than given in full. Modules are shown in gray, and un-run
@@ -40,7 +40,7 @@ most recent test run are shown in faded red and green.
 \end{tableii}
 
 
-\section{Detail Screen}
+\section{Detail Screen \label{detail}}
 
 The detail screen shows a list of non-passing tests on the left side, and the
 traceback for the currently selected test on the right. Failures are displayed
@@ -56,7 +56,7 @@ in red, and errors in yellow. Tests are listed in alphabetical order.
 \end{tableii}
 
 
-\section{Error Screen}
+\section{Error Screen \label{error}}
 
 The error screen provides a primitive pager for viewing tracebacks.
 
@@ -66,7 +66,7 @@ The error screen provides a primitive pager for viewing tracebacks.
 \end{tableii}
 
 
-\section{Debugging Screen}
+\section{Debugging Screen \label{debugging}}
 
 The debugging screen is a primitive terminal for interacting with a Python
 debugger session. When a child process includes the string '\code{(Pdb) }' in

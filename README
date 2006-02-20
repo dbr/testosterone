@@ -1,36 +1,16 @@
-Pytest is a testing interpreter for Python.
+testosterone is a manly Python testing interface.
 
 
-========================================
-    INSTALLATION
-========================================
+INSTALLATION
 
-Here's how to install pytest and verify that it works:
-
-    $ cd ~
-    $ fetch http://www.zetadev.com/software/pytest/trunk/dist/pytest-trunk.tar.gz
-    $ tar zxf pytest-trunk.tar.gz
-    $ cd pytest-trunk
+    $ make
     $ sudo make install
-    ... # installation output
-    $ cd doc
-    $ pytest tutorial.pyt
-    ... # should see report output
-    $ less tutorial.pyt
-    ... # the best way to learn about pytest
+
+This installs the testosterone Python package, the testosterone executable, and
+the testosterone(1) man page. Please consult the Makefile to confirm and/or
+change installation paths, etc.
 
 
-========================================
-    RESOURCES
-========================================
+SEE ALSO
 
-For more information, please consult the following resources:
-
-    - The manual page is available in HTML at doc/pytest.1.html in this
-    distribution, and via man 1 pytest.
-
-    - The API documentation is at doc/api/.
-
-    - Documentation and archives are also available at:
-
-        http://www.zetadev.com/software/pytest/
+    http://www.zetadev.com/software/testosterone/
