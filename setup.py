@@ -12,13 +12,13 @@ classifiers = [
   , 'Topic :: Software Development :: Testing'
                 ]
 
-setup( name = 'pytest'
-     , version = '0.3'
+setup( name = 'testosterone'
+     , version = '0.4'
      , package_dir = {'':'site-packages'}
-     , packages = ['ASTutils','PyTest']
-     , description = 'Pytest is a testing interpreter for Python.'
+     , packages = ['testosterone']
+     , description = 'testosterone is a manly testing interface for Python.'
      , author = 'Chad Whitacre'
-     , author_email = 'chad [at] zetaweb [dot] com'
-     , url = 'http://www.zetadev.com/software/pytest/'
+     , author_email = 'chad@zetaweb.com'
+     , url = 'http://www.zetadev.com/software/testosterone/'
      , classifiers = classifiers
       )

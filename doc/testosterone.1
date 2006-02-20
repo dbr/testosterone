@@ -1,0 +1,109 @@
+.Dd February 20, 2006
+.Os
+.Dt TESTOSTERONE 1 LOCAL
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh NAME
+.Nm testosterone
+.Nd a manly testing interface for Python
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh SYNOPSIS
+.Nm
+.Op options
+.Ar module
+.Op testcase
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh DESCRIPTION
+
+.Nm
+is an interface for running tests written with the Python standard library's
+unittest module.
+.Ar dotted_name
+is the name of a Python module in dot notation.
+.Nm
+performs test discovery in module-space, by searching sys.modules for
+
+
+
+It exposes both a command line interface and a curses-based
+interface.
+.Nm
+
+.
+
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh IMPLEMENTATION NOTES
+This program is known to work with the following software:
+.Pp
+.Bl -dash -offset indent -compact
+.It
+FreeBSD 4.11
+.It
+Python 2.4.2
+.El
+.\"
+.\"
+.\"
+.\"
+.\"
+.\".Sh FILES
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh EXAMPLES
+Run
+.Nm
+'s
+own tests interactively:
+.Bl -item -offset indent
+.It
+$ testosterone testosterone
+.El
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh SEE ALSO
+.Xr python 1
+.\"
+.\"
+.\"
+.\"
+.\"
+.\".Sh HISTORY
+.\".Bl -hang
+.\".It Em 2005-05-01
+.\"released version 0.8
+.\".El
+.\"
+.\"
+.\"
+.\"
+.\"
+.Sh AUTHORS
+.Bl -item -compact
+.It
+(c) 2005 Chad Whitacre <http://www.zetadev.com/>
+.It
+This program is beerware. If you like it, buy me a beer someday.
+.It
+No warranty is expressed or implied.
+.El

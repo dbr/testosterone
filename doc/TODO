@@ -1,3 +1,10 @@
+release
+    testosterone.1
+    testosterone.tex
+    package
+    screencast
+    update website
+
 consider a TESTOSTERONE_STOPWORDS environment variable
 add ability to cancel a report refresh
 
