@@ -11,7 +11,7 @@ MKHOWTO    = $(PYTHON_SRC)/Doc/tools/mkhowto \
 				--logging \
 				--up-link "http://www.zetadev.com/software/testosterone/" \
 				--up-title "httpy homepage" \
-				--address "<a href=\"http://www.zetadev.com/software/testosterone/\">testosterone is Zeta software</a>" \
+				--address "<a href=\"http://www.zetadev.com/software/testosterone/\">testosterone is Zeta software</a>. It is copyright &copy; 2006 Chad Whitacre, and is offered free of charge, warranty, and restrictions." \
 #				--style style.css
 
 
@@ -25,7 +25,7 @@ html: clean
 
 pdf:
 	$(PYTHON_SRC)/Doc/tools/mkhowto --pdf testosterone.tex
-	mv httpy.pdf ../testosterone-$(VERSION).pdf
+	mv testosterone.pdf ../testosterone-$(VERSION).pdf
 
 clean:
 	rm -rf *~ *.aux *.idx *.ilg *.ind *.log *.toc *.bkm *.syn \

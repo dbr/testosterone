@@ -1,9 +1,7 @@
 release
-    testosterone.1
-    testosterone.tex
     package
-    screencast
     update website
+    screencast
 
 consider a TESTOSTERONE_STOPWORDS environment variable
 add ability to cancel a report refresh
@@ -91,3 +89,4 @@ DebuggingScreen
     react to EOF
     exit cleanly
     safely restore curses state after exiting DebuggingScreen
+documentation -- manual and html/pdf

@@ -1,15 +1,15 @@
-when svn is stable, tag the release, then co the tag and do the following:
+when svn is stable, tag the release, then update the following items on the tag:
 
-version needs to be bumped in the following places:
     setup.py
     README (paths in installation instructions)
     man/man1/pytest.1 (add note to HISTORY; change date)
     Makefile (version variable in doc/release section)
+    site-packages/testosterone/__init__.py
 
-make release will re-generate docs and build archives
+make dist will re-generate docs and build archives
 
 archives etc. won't go back in svn but docs will
 
 when it's all set, check the tag WC back in
 
-release is done!zs
+release is done!

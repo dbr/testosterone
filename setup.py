@@ -15,7 +15,13 @@ classifiers = [
 setup( name = 'testosterone'
      , version = '0.4'
      , package_dir = {'':'site-packages'}
-     , packages = ['testosterone']
+     , packages = [ 'testosterone'
+                  , 'testosterone.cli'
+                  , 'testosterone.interactive'
+                  , 'testosterone.interactive.screens'
+                  , 'testosterone.tests'
+                  , 'testosterone.tests.interactive'
+                   ]
      , description = 'testosterone is a manly testing interface for Python.'
      , author = 'Chad Whitacre'
      , author_email = 'chad@zetaweb.com'
