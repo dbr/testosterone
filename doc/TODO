@@ -1,8 +1,5 @@
 consider a TESTOSTERONE_STOPWORDS environment variable
 add ability to cancel a report refresh
-bug: JHolland's
-
-
 
 ScrollArea
     consider wrapping: scroll off bottom jumps back to top
@@ -98,4 +95,4 @@ release
     cheeseshop
     screencast
     announcement
-
+bug: JHolland's

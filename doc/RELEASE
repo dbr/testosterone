@@ -4,7 +4,7 @@ when svn is stable, tag the release, then update the following items on the tag:
     doc/Makefile                            version
     doc/tex/testosterone.tex                version
     setup.py                                version
-    site-packages/testosterone/__init__.py  __version__
+    site-packages/testosterone/__init__.py  __version__; turn off logging
 
 make dist will re-generate docs and build archives
     put docs and archives on zetadev.com/software
