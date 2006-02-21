@@ -1,22 +1,15 @@
-release
-    cheeseshop
-    PyCon wiki
-    screencast
-    announcement
-    ===done===
-    testosterone.1
-    testosterone.tex
-    package
-    tag release
-    update website
-
 consider a TESTOSTERONE_STOPWORDS environment variable
 add ability to cancel a report refresh
+bug: JHolland's
+
+
 
 ScrollArea
     consider wrapping: scroll off bottom jumps back to top
     still some edge cases out there I think
 SummaryScreen
+    bug TestCase gone, get IndexError, q back to normal
+    if you import a TestCase into another module, it shows up twice
 DetailScreen
     when focus is on result during refresh, refresh doesn't get refreshed
     down one, page down x2 error -- lost it, twice :^(
@@ -96,3 +89,13 @@ DebuggingScreen
     react to EOF
     exit cleanly
     safely restore curses state after exiting DebuggingScreen
+release
+    testosterone.1
+    testosterone.tex
+    package
+    tag release
+    update website
+    cheeseshop
+    screencast
+    announcement
+
