@@ -1,13 +1,24 @@
 consider a TESTOSTERONE_STOPWORDS environment variable
 add ability to cancel a report refresh
+clean up line breaks in man page
 
 ScrollArea
     consider wrapping: scroll off bottom jumps back to top
     still some edge cases out there I think
 SummaryScreen
+    annoying that F5 clears tests; that should be <ctrl>-F5
+    coming from ErrorScreen, get:
+          File "/usr/home/whit537/workbench/testosterone/site-
+            packages/testosterone/interactive/screens/summary.py", line 323, in
+            draw_content
+          tpass5, tfail, terr, tall = self.summary.totals
+
+        ValueError: need more than 0 values to unpack
     bug TestCase gone, get IndexError, q back to normal
     if you import a TestCase into another module, it shows up twice
 DetailScreen
+    potentially annoying to get bumped back to summary when you passed a test on purpose
+        but aren't done with that screen yet
     when focus is on result during refresh, refresh doesn't get refreshed
     down one, page down x2 error -- lost it, twice :^(
     up always beeps in result pane
