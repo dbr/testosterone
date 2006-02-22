@@ -1,6 +1,6 @@
 when svn is stable, tag the release, then update the following items on the tag:
     Makefile                                version
-    doc/testosterone.1                      date; HISTORY
+    doc/testosterone.1                      date; VERSION
     doc/Makefile                            version
     doc/tex/testosterone.tex                version
     setup.py                                version
@@ -8,3 +8,6 @@ when svn is stable, tag the release, then update the following items on the tag:
 
 make dist will re-generate docs and build archives
     put docs and archives on zetadev.com/software
+
+update PyPI, and if necessary, the testing tools taxonomy:
+    http://pycheesecake.org/wiki/PythonTestingToolsTaxonomy
