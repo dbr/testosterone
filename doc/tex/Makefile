@@ -10,7 +10,7 @@ MKHOWTO    = $(PYTHON_SRC)/Doc/tools/mkhowto \
 				--dir ./html \
 				--logging \
 				--up-link "http://www.zetadev.com/software/testosterone/" \
-				--up-title "httpy testosterone" \
+				--up-title "testosterone homepage" \
 				--address "<a href=\"http://www.zetadev.com/software/testosterone/\">testosterone is Zeta software</a>. It is copyright &copy; 2006 by Chad Whitacre, and is offered free of charge, warranty, and restrictions." \
 #				--style style.css
 
