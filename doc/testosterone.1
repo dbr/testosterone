@@ -93,6 +93,7 @@ in their full dotted name.
 .Nm
 collects TestCase classes that are defined in these modules, and prints a
 summary report to the standard output of the format (actually 80 chars wide):
+.Pp
 .Bf -literal
     -------------<| testosterone |>-------------
     <header row>
@@ -112,6 +113,7 @@ Otherwise, <passing> is given as a percentage, with a terminating percent sign;
 the other three are given in absolute terms. There will always be at least one
 space between each field, and data rows will be longer than 80 characters iff
 the field values exceed the following character lengths:
+.Pp
 .Bl -column -offset indent ".Sy field" ".Sy width"
 .It Sy field Ta Sy width
 .It Li name Ta "  60"
@@ -119,6 +121,7 @@ the field values exceed the following character lengths:
 .It Li errors Ta "   4"
 .It Li total Ta "   4"
 .El
+.Pp
 Note that in order for your TestCases to be found, you must import their
 containing modules within
 .Ar module .
@@ -170,7 +173,7 @@ You may run any subset of the presented tests. The totals for the most recent
 test run are shown at the bottom of the screen, in green if all tests pass, red
 otherwise. TestCases for which there are results but that were not part of the
 most recent test run are shown in faded red and green.
-.Bl -hang -width "      "
+.Bl -hang -width "      " -offset indent
 .It Em F5
 Refresh the list of available TestCases without running them.
 .It Em enter
@@ -189,7 +192,7 @@ Run the selected tests and stay on the summary screen.
 The detail screen shows a list of non-passing tests on the left side, and the
 traceback for the currently selected test on the right. Failures are displayed
 in red, and errors in yellow. Tests are listed in alphabetical order.
-.Bl -hang -width "      "
+.Bl -hang -width "      " -offset indent
 .It Em F5
 Run the tests again.
 .It Em enter
@@ -208,7 +211,7 @@ Alias for
 .El
 .Ss Error Screen
 The error screen provides a primitive pager for viewing tracebacks.
-.Bl -hang -width "      "
+.Bl -hang -width "      " -offset indent
 .It Em left-arrow
 Alias for
 .Em q .
@@ -227,8 +230,11 @@ returns to the previous screen, ignoring any report output that may have
 followed the debugging session.
 You can easily start debugging from any point in your program or tests by
 manually setting a breakpoint:
+.Pp
 .Dl import pdb; pdb.set_trace()
+.Pp
 The Python debugger's command reference is online at:
+.Pp
 .Dl http://docs.python.org/lib/debugger-commands.html
 .\"
 .\"
@@ -257,12 +263,11 @@ Python 2.4.2
 .\"
 .Sh EXAMPLES
 Run
-.Nm
-'s
-own tests interactively:
+.Nm Ns 's
+own tests, displaying a summary report on the standard output:
 .Bl -item -offset indent
 .It
-$ testosterone testosterone
+$ testosterone -s testosterone.tests
 .El
 .\"
 .\"
