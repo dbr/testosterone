@@ -1,11 +1,19 @@
 consider a TESTOSTERONE_STOPWORDS environment variable
 add ability to cancel a report refresh
 use kbd in doc for screens
+lame message when there is a syntax error
+    get an ImportError on the TestCase rather than the syntax error
+need console for program output before tests
+    so we can use print
 
 ScrollArea
     consider wrapping: scroll off bottom jumps back to top
     still some edge cases out there I think
 SummaryScreen
+    hard to debug inter-test problems
+        i.e., run all tests and some break, but just run that one and they work
+    remove testscases, hit F5, the all still show up
+    submodule bullet bug: GetResponder, GetResponders
     add new TestCase, hit F5, doesn't appear
         update: new one shows up, but replaces existing one
     spacebar from module doesn't refresh TestCases before running, so results look goofy
@@ -21,13 +29,13 @@ SummaryScreen
     bug TestCase gone, get IndexError, q back to normal
     if you import a TestCase into another module, it shows up twice
 DetailScreen
+    should run and report on tests in the order they are defined, not alphabetically
     consider calling out line number of test somewhere, since that's the quickest way to jump to a test
     potentially annoying to get bumped back to summary when you passed a test on purpose
         but aren't done with that screen yet
     when focus is on result during refresh, refresh doesn't get refreshed
     down one, page down x2 error -- lost it, twice :^(
     up always beeps in result pane
-    bug: fron traceback screen,
 ErrorScreen
     really want to use a real pager for this if we can
 DebuggingScreen
