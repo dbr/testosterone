@@ -1,11 +1,15 @@
 consider a TESTOSTERONE_STOPWORDS environment variable
 add ability to cancel a report refresh
-clean up line breaks in man page
+use kbd in doc for screens
 
 ScrollArea
     consider wrapping: scroll off bottom jumps back to top
     still some edge cases out there I think
 SummaryScreen
+    add new TestCase, hit F5, doesn't appear
+        update: new one shows up, but replaces existing one
+    spacebar from module doesn't refresh TestCases before running, so results look goofy
+    shouldn't show TestCases with 0 tests
     annoying that F5 clears tests; that should be <ctrl>-F5
     coming from ErrorScreen, get:
           File "/usr/home/whit537/workbench/testosterone/site-
@@ -17,6 +21,7 @@ SummaryScreen
     bug TestCase gone, get IndexError, q back to normal
     if you import a TestCase into another module, it shows up twice
 DetailScreen
+    consider calling out line number of test somewhere, since that's the quickest way to jump to a test
     potentially annoying to get bumped back to summary when you passed a test on purpose
         but aren't done with that screen yet
     when focus is on result during refresh, refresh doesn't get refreshed
@@ -107,3 +112,5 @@ release
     screencast
     announcement
 bug: JHolland's
+fix Makefile for GNU/Linux
+clean up line breaks in man page
