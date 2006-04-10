@@ -12,13 +12,12 @@ ScrollArea
 SummaryScreen
     hard to debug inter-test problems
         i.e., run all tests and some break, but just run that one and they work
-    remove testscases, hit F5, the all still show up
+    remove TestCases, hit ctrl-L, the all still show up
     submodule bullet bug: GetResponder, GetResponders
-    add new TestCase, hit F5, doesn't appear
+    add new TestCase, hit ctrl-L, doesn't appear
         update: new one shows up, but replaces existing one
     spacebar from module doesn't refresh TestCases before running, so results look goofy
     shouldn't show TestCases with 0 tests
-    annoying that F5 clears tests; that should be <ctrl>-F5
     coming from ErrorScreen, get:
           File "/usr/home/whit537/workbench/testosterone/site-
             packages/testosterone/interactive/screens/summary.py", line 323, in
@@ -43,6 +42,7 @@ DebuggingScreen
     command history
     deal better with resizes
     try to keep scrollback (paging)
+    color(!)
 
 
 
@@ -84,6 +84,7 @@ SummaryScreen
     need to do something with errors
     continuation indicators -> scrollbars!
     should refuse to attempt run for module with 0 tests
+    annoying that F5 clears tests; that should be <ctrl>-F5
 ModuleScreen -> SummaryScreen
 DetailScreen
     Detail

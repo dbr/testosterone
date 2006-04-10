@@ -14,7 +14,7 @@ configure:
 
 # [re]create the man page to be installed
 	rm -f testosterone.1.gz
-	gzip -c -9 doc/testosterone.1 > testosterone.1.gz
+	gzip -c -9 doc/man1/testosterone.1 > testosterone.1.gz
 	chmod 444 testosterone.1.gz
 
 

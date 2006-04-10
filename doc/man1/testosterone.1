@@ -173,20 +173,27 @@ You may run any subset of the presented tests. The totals for the most recent
 test run are shown at the bottom of the screen, in green if all tests pass, red
 otherwise. TestCases for which there are results but that were not part of the
 most recent test run are shown in faded red and green.
-.Bl -hang -width "      " -offset indent
-.It Em F5
+.Bl -hang -width "right-arrow" -offset indent
+.It Em <ctrl>-L
 Refresh the list of available TestCases without running them.
 .It Em enter
 Run the selected tests and go to the detail screen if there are non-passing
 tests.
+.It Em left-arrow
+Alias for
+.Em q .
 .It Em q
 Exit
 .Nm .
 .It Em right-arrow
 Alias for
-.Em enter
+.Em enter .
 .It Em space
-Run the selected tests and stay on the summary screen.
+Alias for
+.Em enter .
+.It Em F5
+Alias for
+.Em enter .
 .El
 .Ss Detail Screen
 The detail screen shows a list of non-passing tests on the left side, and the
