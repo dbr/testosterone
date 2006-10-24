@@ -9,7 +9,7 @@ version=0.4
 configure:
 # create the script to be installed
 	rm -f testosterone
-	cp bin/testosterone.py testosterone
+	cp bin/testosterone testosterone
 	chmod 555 testosterone
 
 # [re]create the man page to be installed
@@ -61,3 +61,14 @@ dist: clean
 	mv dist/testosterone-${version}/bin/testosterone.py dist/testosterone-${version}/bin/testosterone
 	cd dist && zip -9rq testosterone-${version}.zip testosterone-${version}
 #	rm -rf dist/testosterone-${version}
+
+
+
+
+# Run our tests using ourself.
+# ============================
+# This was added for Grig's buildbot: http://pybots.org/
+
+test:
+	export PYTHONPATH=~/site-packages
+	python bin/testosterone -s -x demo testosterone.tests
