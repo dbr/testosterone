@@ -67,8 +67,8 @@ dist: clean
 
 # Run our tests using ourself.
 # ============================
-# This was added for Grig's buildbot: http://pybots.org/
+# This was added for Grig's buildbot: http://pybots.org/. The demos are removed
+# because they yield errors/failures (on purpose).
 
 test:
-	export PYTHONPATH=~/site-packages
 	python bin/testosterone -s -x demo testosterone.tests

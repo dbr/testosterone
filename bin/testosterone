@@ -1,5 +1,20 @@
 #!/usr/bin/env python
 import os
 os.environ['PYTHONTESTING'] = 'testosterone'
-from testosterone.cli.main import main
+try:
+    from testosterone.cli.main import main
+except ImportError:
+
+    # Try harder to find the testosterone package.
+    # ============================================
+    # This is so we can run out of the box w/o being installed.
+
+    import sys
+    scriptname = os.path.realpath(sys.argv[0])
+    root = os.path.dirname(os.path.dirname(scriptname))
+    pkg = os.path.join(root, 'site-packages')
+    sys.path.insert(0, pkg)
+
+    from testosterone.cli.main import main
+
 raise SystemExit(main())
